@@ -1,0 +1,29 @@
+# dependencies and build output
+node_modules
+.next
+out
+*.tsbuildinfo
+
+# local environment
+.env*.local
+
+# real school data — never commit student names, class rosters or reports
+# generated from real exports
+*.xlsx
+!web/fixtures/*.xlsx
+*.xls
+!web/fixtures/*.xls
+Анализ успеваемости*
+averageMarks*.xlsx
+averageMarks*.xls
+
+# local QA scratch (design review artefacts, measured screenshots)
+.impeccable/
+.qoder-office-xlsx-locks/
+
+# editor and OS noise
+.DS_Store
+Thumbs.db
+*.log
+__pycache__/
+*.pyc

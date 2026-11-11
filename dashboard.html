@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анализ успеваемости · 9А</title>
+<style>
+:root{
+  --paper:#F7F5F0; --paper-2:#FFFFFF; --ink:#1A1D21; --ink-2:#5A5F66;
+  --rule:#C9C7C4; --rule-2:#E3E0DA; --band:#EFEDE7; --zebra:#F1EFE9;
+  --m5:#4C9A6A; --m4:#C9A227; --m3:#C77B3C; --m2:#DC2626;
+  --accent:#2F4B7C; --focus:#2F4B7C;
+  --pill-ink:#1A1D21; --pill-ink-2:#FFFFFF;
+  --shadow:none;
+}
+html[data-theme="dark"]{
+  --paper:#14161A; --paper-2:#1B1E23; --ink:#E8E6E1; --ink-2:#A6ABB2;
+  --rule:#3A4048; --rule-2:#2A2F36; --band:#1F232A; --zebra:#20242B;
+  --m5:#5FB584; --m4:#DCBB42; --m3:#DB9155; --m2:#EB514A;
+  --accent:#7FA3D8; --focus:#7FA3D8;
+  --pill-ink:#14161A; --pill-ink-2:#14161A;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:16px; line-height:1.45;
+  font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1440px;margin:0 auto;padding:32px 40px 72px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+.rule{border:0;border-top:1px solid var(--rule);margin:0}
+
+/* ---- header ---- */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  padding-bottom:14px;border-bottom:2px solid var(--ink);margin-bottom:0}
+.head h1{font-size:30px;line-height:1.15}
+.head .meta{font-size:30px;line-height:1.15;font-weight:600;letter-spacing:-.015em;
+  text-align:right;white-space:nowrap}
+.theme-btn{
+  font:inherit;font-size:13px;font-weight:600;letter-spacing:.02em;
+  color:var(--ink);background:var(--paper-2);border:1px solid var(--rule);
+  border-radius:3px;padding:7px 14px;cursor:pointer;
+}
+.theme-btn:hover{border-color:var(--ink)}
+.theme-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;
+  padding:14px 0 12px}
+
+/* ---- KPI band ---- */
+/* the header already carries a bold rule; the band needs only its own
+   lower rule, so the page does not show two dividers under the title */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);padding-top:22px;
+  border-bottom:1px solid var(--rule);margin-bottom:28px}
+.kpi{padding:20px 24px 18px;border-left:1px solid var(--rule)}
+.kpi:first-child{border-left:0;padding-left:0}
+.kpi .lab{font-size:13px;color:var(--ink-2);margin-bottom:2px}
+.kpi .val{font-size:44px;font-weight:600;line-height:1.05;letter-spacing:-.025em}
+.kpi .val small{font-size:22px;font-weight:600;margin-left:2px}
+.kpi .hint{font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.35}
+
+/* ---- section headers ---- */
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  border-bottom:1px solid var(--rule);padding-bottom:7px;margin:0 0 16px}
+.sec h2{font-size:17px}
+.sec .note{font-size:12.5px;color:var(--ink-2)}
+/* top-level blocks breathe apart; a nested .sec inside one of them does not
+   get a second gap, so the rule targets the section, not the header */
+section[aria-labelledby]{margin-bottom:34px}
+section[aria-labelledby] > .sec:first-child{margin-top:0}
+section[aria-labelledby] > .sec ~ *{margin-top:0}
+
+/* ---- legend ---- */
+.legend{display:grid;grid-template-columns:1fr 1.15fr 1.35fr;gap:0;
+  border:1px solid var(--rule);margin-bottom:28px;background:var(--paper-2)}
+.lg{padding:14px 18px;border-left:1px solid var(--rule)}
+.lg:first-child{border-left:0}
+.lg h3{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);
+  font-weight:600;margin-bottom:10px}
+.keyrow{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:13.5px}
+.keyrow .sw{width:15px;height:15px;flex:0 0 15px;border-radius:2px}
+.keyrow .kk{font-weight:600;width:12px}
+.keyrow .kd{color:var(--ink-2);flex:1}
+.keyrow .kc{font-weight:600}
+.keyrow .ks{color:var(--ink-2);width:48px;text-align:right}
+.keyrows{margin-top:12px}
+.scale{display:flex;height:15px;border-radius:2px;overflow:hidden;margin:2px 0 6px}
+.scale i{flex:1}
+.scale-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2)}
+.catrow{display:flex;align-items:baseline;gap:8px;padding:3px 0;font-size:13.5px}
+.catrow .cn{flex:1}
+.catrow .cc{font-weight:600}
+.catrow .cs{color:var(--ink-2);width:46px;text-align:right}
+
+/* ---- charts ---- */
+.grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:32px;margin-bottom:34px}
+.grid2-half{grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
+svg{display:block;max-width:100%}
+.bar-label{font-size:12px;fill:var(--ink-2)}
+.bar-value{font-size:12.5px;font-weight:600;fill:var(--ink)}
+.axis-line{stroke:var(--rule);stroke-width:1}
+.axis-text{font-size:11.5px;fill:var(--ink-2)}
+
+/* ---- absence widget ---- */
+.absent{border:1px solid var(--rule);background:var(--paper-2);padding:16px 20px;
+  margin-bottom:30px;height:100%}
+.absent h3{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);
+  font-weight:600;margin-bottom:12px}
+.abs-head{display:flex;justify-content:flex-end;align-items:baseline;gap:10px;
+  padding:0 0 6px;border-bottom:1px solid var(--rule)}
+.abs-head .as{font-size:13.5px;font-weight:600}
+.abs-head .ac{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.abs-next{text-align:right;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;padding-top:16px;margin-top:12px;
+  border-top:1px solid var(--rule-2)}
+.abs-names{display:flex;flex-wrap:wrap;gap:6px 28px;padding:9px 0 14px}
+.abs-n{display:block;font-size:13px;line-height:1.4}
+.abs-n b{display:block;font-weight:600}
+.abs-n i{display:block;font-style:normal;color:var(--ink-2);font-size:12px}
+.abs-total{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin-top:4px;padding-top:9px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-2)}
+.abs-total b{color:var(--ink);font-weight:600}
+
+/* ---- strong and weak subjects ---- */
+.ptblock{margin-bottom:14px}
+.ptblock:last-child{margin-bottom:0}
+.ptlabel{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:5px}
+.pthead{display:flex;align-items:baseline;gap:9px;padding:0 0 5px;
+  border-bottom:1px solid var(--rule);font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-2)}
+.pthead .pn{flex:1}
+.pthead .pv{width:82px;text-align:right}
+.ptrow{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13.5px;
+  border-top:1px solid var(--rule-2)}
+.ptrow:first-of-type{border-top:0}
+.ptrow .pd{width:9px;height:9px;flex:0 0 9px;border-radius:2px}
+.ptrow .pn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptrow .pv{width:82px;text-align:right;font-weight:600}
+
+/* ---- ranking ---- */
+.rk{border-collapse:collapse;width:100%;font-size:13.5px}
+.rk th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--rule)}
+.rk td{padding:5px 6px;border-bottom:1px solid var(--rule-2)}
+.rk tbody tr:nth-child(even) td{background:var(--zebra)}
+.rk .pl{color:var(--ink-2)}
+.rk .av{font-weight:600;text-align:right}
+.rk tr.top .pl{color:var(--ink);font-weight:700}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:2px;
+  color:var(--pill-ink);white-space:nowrap}
+.pill.m2{color:var(--pill-ink-2)}
+
+/* ---- analysis groups ---- */
+.groups{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);
+  background:var(--paper-2)}
+.grp{padding:15px 18px;border-left:1px solid var(--rule)}
+.grp:first-child{border-left:0}
+.grp .gh{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.grp .dot{width:11px;height:11px;border-radius:2px;flex:0 0 11px}
+.grp .gt{font-size:14px;font-weight:600}
+.grp .gc{margin-left:auto;font-size:19px;font-weight:600}
+.grp .gsub{font-size:12px;color:var(--ink-2);margin-bottom:10px}
+.grp ul{list-style:none;margin:0;padding:0}
+.grp li{font-size:13px;padding:3px 0;border-top:1px solid var(--rule-2);line-height:1.35}
+.grp li:first-child{border-top:0}
+.grp .none{font-size:13px;color:var(--ink-2);font-style:italic}
+
+/* ---- subject table ---- */
+.sbt{width:100%;border-collapse:collapse;font-size:13.5px}
+.sbt th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--rule)}
+.sbt th.n,.sbt td.n{text-align:right}
+.sbt td{padding:6px 8px;border-bottom:1px solid var(--rule-2)}
+.sbt tbody tr:nth-child(even) td{background:var(--zebra)}
+.sbt{table-layout:fixed}
+.sbt .nm{width:30%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbt .av{font-weight:600;width:14%;text-align:right}
+.sbt th.cnt{width:7%;text-align:center}
+.sbt td.cnt{text-align:center;font-weight:600;color:var(--pill-ink)}
+.sbt .cnt.z{color:var(--ink-2);font-weight:400;background:none}
+.sbt .cnt.m5{background:var(--m5)}
+.sbt .cnt.m4{background:var(--m4)}
+.sbt .cnt.m3{background:var(--m3)}
+.sbt .cnt.m2{background:var(--m2);color:var(--pill-ink-2)}
+.sbt .pc{width:12%;text-align:right;font-variant-numeric:tabular-nums}
+.sbt tr:last-child td{border-bottom:0}
+
+/* ---- top three ---- */
+.top3{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+.top3 td{padding:6px 4px;border-bottom:1px solid var(--rule-2)}
+.top3 .pl{width:30px;color:var(--ink-2)}
+.top3 .nm{width:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top3 .av{width:56px;text-align:right;font-weight:600}
+.top3 .ct{width:auto}
+.top3 tr:last-child td{border-bottom:0}
+
+/* ---- ranking with mark counts ---- */
+/* the name column must not swallow the row: the table sits next to the
+   subject table, so every column gets an explicit share of the width */
+.rk{table-layout:fixed}
+.rk .pl{width:7%}
+/* every column needs an explicit share: in a fixed layout a width:auto
+   column claims the leftover space and squeezes the name into one word
+   per line */
+.rk .nm{width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .av{width:14%}
+.rk th.cnt{width:8.5%;text-align:center}
+.rk td.cnt{text-align:center;font-weight:600;font-variant-numeric:tabular-nums;
+  color:var(--pill-ink)}
+.rk .cnt.z{color:var(--ink-2);font-weight:400;background:none}
+.rk .cnt.m5{background:var(--m5)}
+.rk .cnt.m4{background:var(--m4)}
+.rk .cnt.m3{background:var(--m3)}
+.rk .cnt.m2{background:var(--m2);color:var(--pill-ink-2)}
+.rk .cnt.has{font-weight:700}
+
+/* ---- footer ---- */
+.foot{margin-top:38px;padding-top:16px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--ink-2);line-height:1.6}
+.foot b{color:var(--ink);font-weight:600}
+
+@media (max-width:1080px){
+  .wrap{padding:24px 22px 56px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi:nth-child(3){border-left:0;padding-left:0}
+  .kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+  .legend{grid-template-columns:1fr}
+  .lg{border-left:0;border-top:1px solid var(--rule)}
+  .lg:first-child{border-top:0}
+  .groups{grid-template-columns:repeat(2,1fr)}
+  .grp:nth-child(3){border-left:0;border-top:1px solid var(--rule)}
+  .grp:nth-child(4){border-top:1px solid var(--rule)}
+  .grid2{grid-template-columns:1fr;gap:26px}
+  .head{flex-direction:column;align-items:flex-start;gap:14px}
+  .head .meta{text-align:left}
+  .head h1,.head .meta{font-size:24px}
+}
+@media (max-width:700px){
+  .groups{grid-template-columns:1fr}
+  .grp{border-left:0;border-top:1px solid var(--rule)}
+  .grp:first-child{border-top:0}
+  /* a table that cannot fit becomes stacked blocks: each row reads as a
+     card instead of forcing a sideways scroll */
+  .rk,.rk tbody,.rk tr,.rk td{display:block;width:auto}
+  .rk thead{position:absolute;left:-9999px}
+  .rk tr{border-bottom:1px solid var(--rule);padding:9px 0}
+  .rk td{border:0;padding:0 0 0 34px;position:relative;display:inline-block;
+    width:auto;margin-right:6px}
+  .rk .nm{width:auto;max-width:calc(100% - 40px);white-space:normal}
+  .rk .pl{position:absolute;left:0;top:0;width:26px}
+  .rk .av{display:inline;margin-left:8px}
+  .rk{font-size:13.5px}
+  .rk .cnt{width:auto;min-width:22px;display:inline-block}
+  .sbt{font-size:12.5px}
+  .sbt th,.sbt td{padding:5px 5px}
+  .sbt .nm{width:26%}
+  .sbt .cnt{width:26px}
+  .sbt .pc{width:62px}
+}
+@media print{
+  body{background:#fff}
+  .theme-btn{display:none}
+  .wrap{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <div>
+    <h1>Анализ успеваемости · 9А</h1>
+  </div>
+  <div style="display:flex;align-items:flex-start;gap:18px">
+    <div class="meta">Данные на 09.11.2026</div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">
+      Тёмная тема
+    </button>
+  </div>
+</header>
+
+<section class="kpis" aria-label="Показатели класса">
+<div class="kpi"><div class="lab">Средний балл класса</div><div class="val num">4,41</div><div class="hint">средний балл класса по всем предметам · 28 учеников</div></div>
+<div class="kpi"><div class="lab">Успеваемость</div><div class="val num">96,4%</div><div class="hint">доля учеников, имеющих только оценки 3, 4 и 5</div></div>
+<div class="kpi"><div class="lab">Качество знаний</div><div class="val num">64,3%</div><div class="hint">доля учеников, имеющих только оценки 4 и 5</div></div>
+<div class="kpi"><div class="lab">Всего оценок</div><div class="val num">445</div><div class="hint">16 предметов · среднее 4,41</div></div>
+</section>
+
+<section aria-labelledby="legendH">
+  <div class="sec">
+    <h2 id="legendH">Легенда</h2>
+    <span class="note">Каждый цвет на этой странице означает ровно одно</span>
+  </div>
+  <div class="legend">
+<div class="lg"><h3>Оценки</h3><div class="keyrow"><span class="sw" style="background:var(--m5)"></span><span class="kk">5</span><span class="kd">отлично</span><span class="kc num">212</span></div><div class="keyrow"><span class="sw" style="background:var(--m4)"></span><span class="kk">4</span><span class="kd">хорошо</span><span class="kc num">211</span></div><div class="keyrow"><span class="sw" style="background:var(--m3)"></span><span class="kk">3</span><span class="kd">удовлетворительно</span><span class="kc num">21</span></div><div class="keyrow"><span class="sw" style="background:var(--m2)"></span><span class="kk">2</span><span class="kd">неудовлетворительно</span><span class="kc num">1</span></div></div><div class="lg"><h3>Шкала среднего балла</h3><div class="scale"><i style="background:var(--m2)"></i><i style="background:var(--m3)"></i><i style="background:var(--m4)"></i><i style="background:var(--m5)"></i></div><div class="scale-lbl"><span>2,00</span><span>3,00</span><span>4,00</span><span>5,00</span></div><div class="scale-lbl" style="margin-top:8px">средний балл предмета</div></div><div class="lg"><h3>Категории класса</h3><div class="catrow"><span class="cn">Отличник (все 5)</span><span class="cc num">2</span><span class="cs num">7,1%</span></div><div class="catrow"><span class="cn">Одна 4</span><span class="cc num">2</span><span class="cs num">7,1%</span></div><div class="catrow"><span class="cn">Две и более 4</span><span class="cc num">14</span><span class="cs num">50,0%</span></div><div class="catrow"><span class="cn">Одна 3, без 2</span><span class="cc num">3</span><span class="cs num">10,7%</span></div><div class="catrow"><span class="cn">Две и более 3, без 2</span><span class="cc num">6</span><span class="cs num">21,4%</span></div><div class="catrow"><span class="cn">Есть оценка 2</span><span class="cc num">1</span><span class="cs num">3,6%</span></div></div>
+  </div>
+</section>
+
+<div class="grid2 grid2-half">
+  <div><section class="absent" aria-labelledby="absH"><h3 id="absH">Отсутствуют оценки</h3><div class="abs-head"><span class="as">Вероятность и статистика</span><span class="ac">1 ученик без оценок</span></div><div class="abs-names"><span class="abs-n"><b>Ученик</b><i>07</i></span></div><div class="abs-next">Следующий предмет без оценок</div><div class="abs-head"><span class="as">Обществознание</span><span class="ac">1 ученик без оценок</span></div><div class="abs-names"><span class="abs-n"><b>Ученик</b><i>13</i></span></div><div class="abs-next">Следующий предмет без оценок</div><div class="abs-head"><span class="as">Труд (технология)</span><span class="ac">1 ученик без оценок</span></div><div class="abs-names"><span class="abs-n"><b>Ученик</b><i>14</i></span></div><div class="abs-total"><span>Всего невыставленных оценок</span><b class="num">3</b></div></section></div>
+  <div><section class="absent" aria-labelledby="ptsH"><h3 id="ptsH">Сильные и проблемные предметы</h3><div class="ptblock"><div class="ptlabel">Сильные предметы</div><div class="pthead"><span class="pn">Предмет</span><span class="pv">Средний балл</span></div><div class="ptrow"><span class="pd" style="background:var(--m5)"></span><span class="pn">Геометрия</span><span class="pv num">4,50</span></div><div class="ptrow"><span class="pd" style="background:var(--m5)"></span><span class="pn">Биология</span><span class="pv num">4,49</span></div><div class="ptrow"><span class="pd" style="background:var(--m5)"></span><span class="pn">География</span><span class="pv num">4,47</span></div><div class="ptrow"><span class="pd" style="background:var(--m5)"></span><span class="pn">Информатика</span><span class="pv num">4,45</span></div><div class="ptrow"><span class="pd" style="background:var(--m5)"></span><span class="pn">Химия</span><span class="pv num">4,45</span></div></div><div class="ptblock"><div class="ptlabel">Проблемные предметы</div><div class="pthead"><span class="pn">Предмет</span><span class="pv">Средний балл</span></div><div class="ptrow"><span class="pd" style="background:var(--m2)"></span><span class="pn">Основы безопасности и защиты Родины</span><span class="pv num">4,30</span></div><div class="ptrow"><span class="pd" style="background:var(--m2)"></span><span class="pn">Обществознание</span><span class="pv num">4,30</span></div><div class="ptrow"><span class="pd" style="background:var(--m2)"></span><span class="pn">Иностранный (английский) язык</span><span class="pv num">4,35</span></div></div></section></div>
+</div>
+
+<section aria-labelledby="subjH">
+  <div class="sec">
+    <h2 id="subjH">Средний балл по предметам</h2>
+    <span class="note">Шкала 3,50 — 5,00 · цвет = шкала оценки</span>
+  </div>
+  <div class="grid2">
+    <div><svg viewBox="0 0 746 528" width="100%" role="img" aria-label="Средний балл по предметам"><line class="axis-line" x1="250.0" y1="16" x2="250.0" y2="508"/><text class="axis-text" x="250.0" y="522" text-anchor="middle">3,5</text><line class="axis-line" x1="393.3" y1="16" x2="393.3" y2="508"/><text class="axis-text" x="393.3" y="522" text-anchor="middle">4,0</text><line class="axis-line" x1="536.7" y1="16" x2="536.7" y2="508"/><text class="axis-text" x="536.7" y="522" text-anchor="middle">4,5</text><line class="axis-line" x1="680.0" y1="16" x2="680.0" y2="508"/><text class="axis-text" x="680.0" y="522" text-anchor="middle">5,0</text><text class="bar-label" x="0" y="35">Геометрия</text><rect x="250.0" y="25" width="287.5" height="15" fill="var(--m5)" rx="1.5"/><text class="bar-value" x="544.5" y="37">4,50</text><text class="bar-label" x="0" y="65">Биология</text><rect x="250.0" y="55" width="283.6" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="540.6" y="67">4,49</text><text class="bar-label" x="0" y="95">География</text><rect x="250.0" y="85" width="278.6" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="535.6" y="97">4,47</text><text class="bar-label" x="0" y="125">Информатика</text><rect x="250.0" y="115" width="273.7" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="530.7" y="127">4,45</text><text class="bar-label" x="0" y="155">Химия</text><rect x="250.0" y="145" width="271.1" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="528.1" y="157">4,45</text><text class="bar-label" x="0" y="185">Литература</text><rect x="250.0" y="175" width="268.8" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="525.8" y="187">4,44</text><text class="bar-label" x="0" y="215">Алгебра</text><rect x="250.0" y="205" width="268.1" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="525.1" y="217">4,44</text><text class="bar-label" x="0" y="245">Физика</text><rect x="250.0" y="235" width="267.4" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="524.4" y="247">4,43</text><text class="bar-label" x="0" y="275">Русский язык</text><rect x="250.0" y="265" width="262.8" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="519.8" y="277">4,42</text><text class="bar-label" x="0" y="305">Вероятность и статистика</text><rect x="250.0" y="295" width="262.6" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="519.6" y="307">4,42</text><text class="bar-label" x="0" y="335">Труд (технология)</text><rect x="250.0" y="325" width="261.1" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="518.1" y="337">4,41</text><text class="bar-label" x="0" y="365">История</text><rect x="250.0" y="355" width="247.0" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="504.0" y="367">4,36</text><text class="bar-label" x="0" y="395">Физическая культура</text><rect x="250.0" y="385" width="246.7" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="503.7" y="397">4,36</text><text class="bar-label" x="0" y="425">Иностранный (английский) язык</text><rect x="250.0" y="415" width="245.0" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="502.0" y="427">4,35</text><text class="bar-label" x="0" y="455">Обществознание</text><rect x="250.0" y="445" width="229.5" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="486.5" y="457">4,30</text><text class="bar-label" x="0" y="485">Основы безопасности и защиты Родины</text><rect x="250.0" y="475" width="229.2" height="15" fill="var(--m4)" rx="1.5"/><text class="bar-value" x="486.2" y="487">4,30</text></svg></div>
+    <div>
+      <div class="sec"><h2>Распределение оценок</h2></div>
+      <svg viewBox="0 0 360 34" width="100%" role="img" aria-label="Распределение оценок"><rect x="0.0" y="0" width="171.5" height="34" fill="var(--m5)"/><rect x="171.5" y="0" width="170.7" height="34" fill="var(--m4)"/><rect x="342.2" y="0" width="17.0" height="34" fill="var(--m3)"/><rect x="359.2" y="0" width="0.8" height="34" fill="var(--m2)"/></svg><div class="keyrows"><div class="keyrow"><span class="sw" style="background:var(--m5)"></span><span class="kk">5</span><span class="kd">отлично</span><span class="kc num">212</span><span class="ks num">47,6%</span></div><div class="keyrow"><span class="sw" style="background:var(--m4)"></span><span class="kk">4</span><span class="kd">хорошо</span><span class="kc num">211</span><span class="ks num">47,4%</span></div><div class="keyrow"><span class="sw" style="background:var(--m3)"></span><span class="kk">3</span><span class="kd">удовлетворительно</span><span class="kc num">21</span><span class="ks num">4,7%</span></div><div class="keyrow"><span class="sw" style="background:var(--m2)"></span><span class="kk">2</span><span class="kd">неудовлетворительно</span><span class="kc num">1</span><span class="ks num">0,2%</span></div></div>
+      <div class="sec" style="margin-top:26px"><h2>Лучшие результаты</h2></div>
+      <table class="top3"><tbody><tr class="top"><td class="pl num">1</td><td class="nm">Ученик 01</td><td class="av num">5,00</td><td class="ct"><span class="pill " style="background:var(--m5)">Отличник (все 5)</span></td></tr><tr class="top"><td class="pl num">2</td><td class="nm">Ученик 02</td><td class="av num">4,94</td><td class="ct"><span class="pill " style="background:var(--m4)">Одна 4</span></td></tr><tr class="top"><td class="pl num">3</td><td class="nm">Ученик 08</td><td class="av num">4,88</td><td class="ct"><span class="pill " style="background:var(--m4)">Две и более 4</span></td></tr><tr class="top"><td class="pl num">4</td><td class="nm">Ученик 03</td><td class="av num">4,88</td><td class="ct"><span class="pill m2" style="background:var(--m2)">Одна 3, без 2</span></td></tr><tr class="top"><td class="pl num">5</td><td class="nm">Ученик 15</td><td class="av num">4,86</td><td class="ct"><span class="pill " style="background:var(--m4)">Одна 4</span></td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="anH">
+  <div class="sec">
+    <h2 id="anH">Анализ успеваемости</h2>
+    <span class="note">Кто в какой группе</span>
+  </div>
+  <div class="groups"><div class="grp"><div class="gh"><span class="dot" style="background:var(--m5)"></span><span class="gt">Отличники</span><span class="gc num">2</span></div><div class="gsub">только пятёрки</div><ul><li><b>Ученик 01</b></li><li><b>Ученик 25</b></li></ul></div><div class="grp"><div class="gh"><span class="dot" style="background:var(--m4)"></span><span class="gt">Одна четвёрка</span><span class="gc num">2</span></div><div class="gsub">пятёрки и одна четвёрка</div><ul><li><b>Ученик 02</b> <span style="color:var(--ink-2);font-size:12px">(География: 4)</span></li><li><b>Ученик 15</b> <span style="color:var(--ink-2);font-size:12px">(Физическая культура: 4)</span></li></ul></div><div class="grp"><div class="gh"><span class="dot" style="background:var(--m3)"></span><span class="gt">Одна тройка</span><span class="gc num">3</span></div><div class="gsub">оценки 3, 4 и 5, тройка одна</div><ul><li><b>Ученик 03</b> <span style="color:var(--ink-2);font-size:12px">(Иностранный (английский) язык: 3)</span></li><li><b>Ученик 13</b> <span style="color:var(--ink-2);font-size:12px">(Алгебра: 3)</span></li><li><b>Ученик 23</b> <span style="color:var(--ink-2);font-size:12px">(Основы безопасности и защиты Родины: 3)</span></li></ul></div><div class="grp"><div class="gh"><span class="dot" style="background:var(--m2)"></span><span class="gt">Проблемные</span><span class="gc num">1</span></div><div class="gsub">есть хотя бы одна двойка</div><ul><li><b>Ученик 05</b> <span style="color:var(--ink-2);font-size:12px">(Обществознание: 2)</span></li></ul></div></div>
+</section>
+
+<section aria-labelledby="rkH">
+  <div class="grid2 grid2-tight">
+    <div>
+      <div class="sec">
+        <h2 id="rkH">Рейтинг обучающихся</h2>
+      </div>
+      <table class="rk"><thead><tr><th>Место</th><th class="nm">Обучающийся</th><th style="text-align:right">Средний</th><th class="n cnt">5</th><th class="n cnt">4</th><th class="n cnt">3</th><th class="n cnt">2</th></tr></thead><tbody><tr><td class="pl num">1</td><td class="nm" title="Ученик 01">Ученик 01</td><td class="av num">5,00</td><td class="cnt m5 has">16</td><td class="cnt z">0</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">2</td><td class="nm" title="Ученик 02">Ученик 02</td><td class="av num">4,94</td><td class="cnt m5 has">15</td><td class="cnt m4 has">1</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">3</td><td class="nm" title="Ученик 08">Ученик 08</td><td class="av num">4,88</td><td class="cnt m5 has">14</td><td class="cnt m4 has">2</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">4</td><td class="nm" title="Ученик 03">Ученик 03</td><td class="av num">4,88</td><td class="cnt m5 has">15</td><td class="cnt z">0</td><td class="cnt m3 has">1</td><td class="cnt z">0</td></tr><tr><td class="pl num">5</td><td class="nm" title="Ученик 15">Ученик 15</td><td class="av num">4,86</td><td class="cnt m5 has">15</td><td class="cnt m4 has">1</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">6</td><td class="nm" title="Ученик 25">Ученик 25</td><td class="av num">4,84</td><td class="cnt m5 has">16</td><td class="cnt z">0</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">7</td><td class="nm" title="Ученик 04">Ученик 04</td><td class="av num">4,75</td><td class="cnt m5 has">14</td><td class="cnt z">0</td><td class="cnt m3 has">2</td><td class="cnt z">0</td></tr><tr><td class="pl num">8</td><td class="nm" title="Ученик 27">Ученик 27</td><td class="av num">4,71</td><td class="cnt m5 has">12</td><td class="cnt m4 has">4</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">9</td><td class="nm" title="Ученик 21">Ученик 21</td><td class="av num">4,69</td><td class="cnt m5 has">12</td><td class="cnt m4 has">4</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">10</td><td class="nm" title="Ученик 05">Ученик 05</td><td class="av num">4,69</td><td class="cnt m5 has">14</td><td class="cnt z">0</td><td class="cnt m3 has">1</td><td class="cnt m2 has">1</td></tr><tr><td class="pl num">11</td><td class="nm" title="Ученик 09">Ученик 09</td><td class="av num">4,67</td><td class="cnt m5 has">12</td><td class="cnt m4 has">4</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">12</td><td class="nm" title="Ученик 22">Ученик 22</td><td class="av num">4,67</td><td class="cnt m5 has">11</td><td class="cnt m4 has">5</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">13</td><td class="nm" title="Ученик 16">Ученик 16</td><td class="av num">4,57</td><td class="cnt m5 has">9</td><td class="cnt m4 has">7</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">14</td><td class="nm" title="Ученик 11">Ученик 11</td><td class="av num">4,54</td><td class="cnt m5 has">9</td><td class="cnt m4 has">7</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">15</td><td class="nm" title="Ученик 13">Ученик 13</td><td class="av num">4,34</td><td class="cnt m5 has">5</td><td class="cnt m4 has">9</td><td class="cnt m3 has">1</td><td class="cnt z">0</td></tr><tr><td class="pl num">16</td><td class="nm" title="Ученик 19">Ученик 19</td><td class="av num">4,25</td><td class="cnt m5 has">2</td><td class="cnt m4 has">14</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">17</td><td class="nm" title="Ученик 17">Ученик 17</td><td class="av num">4,24</td><td class="cnt m5 has">5</td><td class="cnt m4 has">11</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">18</td><td class="nm" title="Ученик 28">Ученик 28</td><td class="av num">4,22</td><td class="cnt m5 has">2</td><td class="cnt m4 has">14</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">19</td><td class="nm" title="Ученик 14">Ученик 14</td><td class="av num">4,18</td><td class="cnt m5 has">1</td><td class="cnt m4 has">14</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">20</td><td class="nm" title="Ученик 20">Ученик 20</td><td class="av num">4,16</td><td class="cnt m5 has">4</td><td class="cnt m4 has">12</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">21</td><td class="nm" title="Ученик 07">Ученик 07</td><td class="av num">4,13</td><td class="cnt m5 has">2</td><td class="cnt m4 has">13</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">22</td><td class="nm" title="Ученик 24">Ученик 24</td><td class="av num">4,08</td><td class="cnt m5 has">1</td><td class="cnt m4 has">15</td><td class="cnt z">0</td><td class="cnt z">0</td></tr><tr><td class="pl num">23</td><td class="nm" title="Ученик 23">Ученик 23</td><td class="av num">4,05</td><td class="cnt m5 has">1</td><td class="cnt m4 has">14</td><td class="cnt m3 has">1</td><td class="cnt z">0</td></tr><tr><td class="pl num">24</td><td class="nm" title="Ученик 06">Ученик 06</td><td class="av num">3,92</td><td class="cnt m5 has">1</td><td class="cnt m4 has">13</td><td class="cnt m3 has">2</td><td class="cnt z">0</td></tr><tr><td class="pl num">25</td><td class="nm" title="Ученик 12">Ученик 12</td><td class="av num">3,89</td><td class="cnt m5 has">1</td><td class="cnt m4 has">12</td><td class="cnt m3 has">3</td><td class="cnt z">0</td></tr><tr><td class="pl num">26</td><td class="nm" title="Ученик 10">Ученик 10</td><td class="av num">3,86</td><td class="cnt m5 has">2</td><td class="cnt m4 has">11</td><td class="cnt m3 has">3</td><td class="cnt z">0</td></tr><tr><td class="pl num">27</td><td class="nm" title="Ученик 26">Ученик 26</td><td class="av num">3,80</td><td class="cnt z">0</td><td class="cnt m4 has">14</td><td class="cnt m3 has">2</td><td class="cnt z">0</td></tr><tr><td class="pl num">28</td><td class="nm" title="Ученик 18">Ученик 18</td><td class="av num">3,71</td><td class="cnt m5 has">1</td><td class="cnt m4 has">10</td><td class="cnt m3 has">5</td><td class="cnt z">0</td></tr></tbody></table>
+    </div>
+    <div>
+      <div class="sec">
+        <h2 id="sbH">Статистика по предметам</h2>
+      </div>
+      <table class="sbt"><thead><tr><th class="nm">Предмет</th><th class="n av">Средний балл</th><th class="n cnt">5</th><th class="n cnt">4</th><th class="n cnt">3</th><th class="n cnt">2</th><th class="n pc">Качество</th></tr></thead><tbody><tr><td class="nm">Геометрия</td><td class="n av num">4,50</td><td class="cnt m5 num">13</td><td class="cnt m4 num">15</td><td class="cnt z num">0</td><td class="cnt z num">0</td><td class="pc num">100,0%</td></tr><tr><td class="nm">Биология</td><td class="n av num">4,49</td><td class="cnt m5 num">15</td><td class="cnt m4 num">13</td><td class="cnt z num">0</td><td class="cnt z num">0</td><td class="pc num">100,0%</td></tr><tr><td class="nm">География</td><td class="n av num">4,47</td><td class="cnt m5 num">11</td><td class="cnt m4 num">17</td><td class="cnt z num">0</td><td class="cnt z num">0</td><td class="pc num">100,0%</td></tr><tr><td class="nm">Информатика</td><td class="n av num">4,45</td><td class="cnt m5 num">15</td><td class="cnt m4 num">12</td><td class="cnt m3 num">1</td><td class="cnt z num">0</td><td class="pc num">96,4%</td></tr><tr><td class="nm">Химия</td><td class="n av num">4,45</td><td class="cnt m5 num">15</td><td class="cnt m4 num">13</td><td class="cnt z num">0</td><td class="cnt z num">0</td><td class="pc num">100,0%</td></tr><tr><td class="nm">Литература</td><td class="n av num">4,44</td><td class="cnt m5 num">12</td><td class="cnt m4 num">15</td><td class="cnt m3 num">1</td><td class="cnt z num">0</td><td class="pc num">96,4%</td></tr><tr><td class="nm">Алгебра</td><td class="n av num">4,44</td><td class="cnt m5 num">13</td><td class="cnt m4 num">13</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,9%</td></tr><tr><td class="nm">Физика</td><td class="n av num">4,43</td><td class="cnt m5 num">14</td><td class="cnt m4 num">13</td><td class="cnt m3 num">1</td><td class="cnt z num">0</td><td class="pc num">96,4%</td></tr><tr><td class="nm">Русский язык</td><td class="n av num">4,42</td><td class="cnt m5 num">14</td><td class="cnt m4 num">12</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,9%</td></tr><tr><td class="nm">Вероятность и статистика</td><td class="n av num">4,42</td><td class="cnt m5 num">12</td><td class="cnt m4 num">13</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,6%</td></tr><tr><td class="nm">Труд (технология)</td><td class="n av num">4,41</td><td class="cnt m5 num">16</td><td class="cnt m4 num">9</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,6%</td></tr><tr><td class="nm">История</td><td class="n av num">4,36</td><td class="cnt m5 num">12</td><td class="cnt m4 num">14</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,9%</td></tr><tr><td class="nm">Физическая культура</td><td class="n av num">4,36</td><td class="cnt m5 num">12</td><td class="cnt m4 num">14</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,9%</td></tr><tr><td class="nm">Иностранный (английский) язык</td><td class="n av num">4,35</td><td class="cnt m5 num">15</td><td class="cnt m4 num">9</td><td class="cnt m3 num">4</td><td class="cnt z num">0</td><td class="pc num">85,7%</td></tr><tr><td class="nm">Обществознание</td><td class="n av num">4,30</td><td class="cnt m5 num">12</td><td class="cnt m4 num">14</td><td class="cnt z num">0</td><td class="cnt m2 num">1</td><td class="pc num">96,3%</td></tr><tr><td class="nm">Основы безопасности и защиты Родины</td><td class="n av num">4,30</td><td class="cnt m5 num">11</td><td class="cnt m4 num">15</td><td class="cnt m3 num">2</td><td class="cnt z num">0</td><td class="pc num">92,9%</td></tr></tbody></table>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <p><b>Как читать показатели.</b>
+  <b>Успеваемость</b> — доля учеников, имеющих только оценки 3, 4 и 5;
+  <b>Качество знаний</b> — доля учеников, имеющих только оценки 4 и 5;
+  <b>Средний балл</b> — средний балл класса по всем предметам.</p>
+  <p>Округление итоговой оценки — по арифметическому правилу: 0,5 и выше вверх.
+  Пустая ячейка означает, что по предмету не было ни одной оценки; это не ноль
+  и в средние баллы не входит.</p>
+  <p>Источник: web/fixtures/averages-sample.xlsx, класс 9А, данные на 09.11.2026.
+  Страница сгенерирована автоматически из исходной таблицы.</p>
+</footer>
+
+</div>
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeBtn');
+  var KEY='cpr-theme';
+  function apply(t){
+    root.setAttribute('data-theme',t);
+    var dark=t==='dark';
+    btn.textContent=dark?'Светлая тема':'Тёмная тема';
+    btn.setAttribute('aria-pressed',dark?'true':'false');
+  }
+  var saved=null;
+  try{saved=localStorage.getItem(KEY);}catch(e){}
+  apply(saved||'light');
+  btn.addEventListener('click',function(){
+    var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    apply(next);
+    try{localStorage.setItem(KEY,next);}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
