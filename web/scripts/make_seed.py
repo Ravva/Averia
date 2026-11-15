@@ -22,15 +22,6 @@ from build_dashboard_data import build_payload, read_source, extract_grade
 
 rng = random.Random(20261111)
 
-FIRST = ["Александр", "Дмитрий", "Максим", "Артём", "Иван", "Михаил", "Даниил", "Кирилл",
-         "Андрей", "Егор", "Никита", "Илья", "Роман", "Тимофей", "Владимир", "Павел",
-         "Анна", "Мария", "София", "Алиса", "Дарья", "Полина", "Елизавета", "Виктория",
-         "Ксения", "Валерия", "Арина", "Вероника", "Таисия", "Ульяна"]
-LAST = ["Смирнов", "Иванов", "Кузнецов", "Соколов", "Попов", "Лебедев", "Козлов", "Новиков",
-        "Петров", "Волков", "Соловьёв", "Васильев", "Зайцев", "Павлов", "Семёнов",
-        "Голубев", "Виноградов", "Богданов", "Воробьёв", "Фёдоров", "Михайлов", "Беляев",
-        "Тарасов", "Белов", "Комаров", "Орлов", "Киселёв", "Макаров", "Андреев", "Ершов"]
-
 SUBJ_7 = ["Русский язык", "Литература", "Алгебра", "Геометрия", "История", "Обществознание",
           "География", "Биология", "Английский язык", "Информатика", "Физика", "ИЗО",
           "Музыка", "Технология", "Физкультура"]
@@ -52,18 +43,9 @@ def perturb(frame: pd.DataFrame, scale: float) -> pd.DataFrame:
 
 
 def synth_class(n: int, subjects: list[str], base: float) -> pd.DataFrame:
-    names = []
-    used = set()
-    while len(names) < n:
-        sex = rng.random() < 0.5
-        first = rng.choice(FIRST[:16] if sex else FIRST[16:])
-        last = rng.choice(LAST)
-        if not sex:
-            last = last + "а" if not last.endswith(("ий", "ой")) else last[:-2] + "ая"
-        name = f"{last} {first}"
-        if name not in used:
-            used.add(name)
-            names.append(name)
+    # Placeholder names only: the repository must never carry anything that
+    # reads like a real student roster.
+    names = [f"Ученик {i:02d}" for i in range(1, n + 1)]
     data = {}
     for s in subjects:
         subj_base = base + rng.uniform(-0.45, 0.35)
