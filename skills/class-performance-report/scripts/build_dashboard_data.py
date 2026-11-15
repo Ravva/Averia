@@ -85,6 +85,12 @@ def read_source(path: str, sheet: str | None, header_cell: str | None):
             raise SystemExit("Could not locate the header row; pass --header-cell.")
 
     frame = pd.read_excel(path, sheet_name=sheet, header=header_row, index_col=0, dtype=str)
+    # The export ends with totals that are not students: a per-subject average
+    # and a count of students with a mark. Counting them as pupils pulls the
+    # averages above 5 and breaks the charts.
+    frame = frame[~frame.index.astype(str).str.strip().str.match(
+        r"^(средний\s+балл|учеников\s+с\s+оценкой|количество\s+учеников|всего\s+учеников|итого|средний\s+балл\s+по\s+предмету)",
+        case=False, na=False)]
     frame = frame.apply(pd.to_numeric, errors="coerce")
     frame = frame[[c for c in frame.columns
                    if str(c).strip() and frame[c].notna().any()]]

@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import type { Payload, Snapshot } from "@/lib/types";
-import { fmtNum, markTone } from "@/lib/utils";
+import { fmtNum, plural } from "@/lib/utils";
 
 const TONE_VAR: Record<string, string> = {
   m5: "var(--m5)",
@@ -11,13 +11,23 @@ const TONE_VAR: Record<string, string> = {
   m2: "var(--m2)",
 };
 
+/* The bar shows an average, not a single mark, so the colour follows the
+   level of the average: 4,50 and above is the "five" zone, below 3,50 is
+   the failing one. */
+function avgTone(avg: number): string {
+  if (avg >= 4.5) return TONE_VAR.m5;
+  if (avg >= 4.0) return TONE_VAR.m4;
+  if (avg >= 3.5) return TONE_VAR.m3;
+  return TONE_VAR.m2;
+}
+
 function trunc(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
-/* Horizontal subject bars — the atlas canon chart. Vertical key-metric
-   gridlines (3,5 / 4,0 / 4,5 / 5,0) are drawn dashed; each bar is tinted
-   by the rounded mark so colour always means the same thing. */
+/* Horizontal subject bars — the atlas canon chart. The scale follows the
+   data (never above 5,00), a dashed line marks the 4,50 threshold that gives
+   a five, and each bar is tinted by the level of its average. */
 export function SubjectsBarChart({ payload }: { payload: Payload }) {
   const subjects = [...payload.subjects]
     .filter((s) => s.avg !== null)
@@ -25,20 +35,24 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
   if (subjects.length === 0) return null;
 
   const minAvg = Math.min(...subjects.map((s) => s.avg ?? 5));
+  const maxAvg = Math.max(...subjects.map((s) => s.avg ?? 5));
   const lo = Math.min(3.5, Math.floor(minAvg * 2) / 2);
-  const hi = 5;
+  const hi = Math.max(5, maxAvg);
   const ticks: number[] = [];
   for (let t = lo; t <= hi + 1e-9; t += 0.5) ticks.push(Number(t.toFixed(1)));
 
-  const left = 250;
-  const right = 680;
-  const plotW = right - left;
-  const top = 16;
-  const rowH = 30;
-  const barH = 15;
+  const labelRight = 236;
+  const plotLeft = 252;
+  const plotRight = 690;
+  const plotW = plotRight - plotLeft;
+  const top = 14;
+  const rowH = 32;
+  const barH = 16;
   const plotBottom = top + subjects.length * rowH;
-  const height = plotBottom + 22;
-  const x = (v: number) => left + ((v - lo) / (hi - lo)) * plotW;
+  const height = plotBottom + 26;
+  const x = (v: number) => plotLeft + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * plotW;
+  const threshold = 4.5;
+  const thresholdX = x(threshold);
 
   return (
     <svg
@@ -51,25 +65,43 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
       {ticks.map((t) => (
         <g key={t}>
           <line className="chart-grid" x1={x(t)} y1={top} x2={x(t)} y2={plotBottom} />
-          <text className="chart-axis-text" x={x(t)} y={height - 6} textAnchor="middle">
+          <text className="chart-axis-text" x={x(t)} y={height - 7} textAnchor="middle">
             {t.toLocaleString("ru-RU", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           </text>
         </g>
       ))}
+
+      {threshold >= lo && threshold <= hi && (
+        <g>
+          <line className="chart-ref" x1={thresholdX} y1={top} x2={thresholdX} y2={plotBottom} stroke="var(--m5)" />
+          <text className="chart-ref-text" x={thresholdX + 6} y={top + 10} fill="var(--m5)">
+            4,50 — порог «5»
+          </text>
+        </g>
+      )}
+
       {subjects.map((s, i) => {
         const avg = s.avg ?? 0;
         const y = top + i * rowH;
-        const w = Math.max(0, x(avg) - left);
-        const tone = TONE_VAR[markTone(Math.round(avg))];
+        const barEnd = x(avg);
+        const w = Math.max(0, barEnd - plotLeft);
+        const tone = avgTone(avg);
+        const inside = barEnd > plotRight - 38;
         return (
           <g key={s.name}>
-            <text className="chart-bar-label" x={0} y={y + 20}>
-              {trunc(s.name, 34)}
+            <text className="chart-bar-label" x={labelRight} y={y + 20} textAnchor="end">
+              {trunc(s.name, 32)}
+              <title>{s.name}</title>
             </text>
-            <rect x={left} y={y + 9} width={w} height={barH} rx={1.5} fill={tone}>
-              <title>{`${s.name} — ${fmtNum(avg)}`}</title>
+            <rect x={plotLeft} y={y + 9} width={w} height={barH} rx={1.5} fill={tone}>
+              <title>{`${s.name} — ${fmtNum(avg)} · ${s.graded} ${plural(s.graded, "оценка", "оценки", "оценок")}`}</title>
             </rect>
-            <text className="chart-bar-value" x={left + w + 7} y={y + 21}>
+            <text
+              className={inside ? "chart-bar-value chart-bar-value-inside" : "chart-bar-value"}
+              x={inside ? plotRight - 8 : barEnd + 7}
+              y={y + 21}
+              textAnchor={inside ? "end" : "start"}
+            >
               {fmtNum(avg)}
             </text>
           </g>

@@ -47,7 +47,7 @@ function toSnapshot(row: Row): Snapshot {
   return {
     id: row.$id,
     classId: String(row.classId),
-    fileName: String(row.fileName),
+    fileName: "",
     dataDate: String(row.dataDate),
     periodStart: row.periodStart ? String(row.periodStart) : "",
     uploadedAt: String(row.uploadedAt),

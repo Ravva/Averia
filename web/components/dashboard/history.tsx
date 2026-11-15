@@ -63,7 +63,7 @@ export function HistoryView({
                 </div>
                 <div className="ml-auto flex items-center gap-3">
                   <div className="text-right text-[11px] leading-tight text-ink2">
-                    <div>{s.fileName}</div>
+                    <div>загружено</div>
                     <div>{fmtDateTime(s.uploadedAt)}</div>
                   </div>
                   {canDelete && (

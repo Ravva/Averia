@@ -34,6 +34,16 @@ export function normalizeClassName(text: string): string | null {
   return `${Number(m[1])}${m[2].toUpperCase()}`;
 }
 
+// The export ends with totals that are not students: a per-subject average
+// and a count of students with a mark. Counting them as pupils pulls the
+// averages above 5 and breaks the charts.
+const SUMMARY_ROW_RE =
+  /^(средний\s+балл|учеников\s+с\s+оценкой|количество\s+учеников|всего\s+учеников|итого|средний\s+балл\s+по\s+предмету)/i;
+
+function isSummaryRow(label: string): boolean {
+  return SUMMARY_ROW_RE.test(label.trim());
+}
+
 export interface ParsedExport {
   frame: SourceFrame;
   dataDate: string;
@@ -110,6 +120,7 @@ export function readExport(buffer: ArrayBuffer): ParsedExport {
   for (let i = headerRow + 1; i < rows.length; i++) {
     const name = cellText(rows[i]?.[0]);
     if (!name) continue;
+    if (isSummaryRow(name)) continue;
     const values = colIdx.map((c) => {
       const v = cellNumber(rows[i]?.[c]);
       return v !== null && v > 0 ? v : null; // 0.00 = не аттестован

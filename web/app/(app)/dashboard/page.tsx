@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDays, FileSpreadsheet, Upload } from "lucide-react";
 import { classSnapshots, useStore } from "@/lib/store";
+import { fmtDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -98,7 +99,7 @@ export default function DashboardPage() {
           </h1>
           <p className="mt-1 text-sm text-ink2">
             {curr
-              ? `Данные на ${curr.dataDate} · период с ${curr.periodStart || "—"} · загружено ${curr.fileName}`
+              ? `Данные на ${curr.dataDate} · период с ${curr.periodStart || "—"} · загружено ${fmtDateTime(curr.uploadedAt)}`
               : "Нет загруженных данных"}
           </p>
         </div>
@@ -160,7 +161,7 @@ export default function DashboardPage() {
                     <StrongWeak payload={curr.payload} />
                   </Section>
                 </div>
-                <Section title="Средний балл по предметам" note="шкала 3,50–5,00 · цвет = оценка · пунктир — ключевые отметки">
+                <Section title="Средний балл по предметам" note="цвет — уровень среднего · пунктир — порог «5»">
                   <div className="border border-rule bg-paper2 p-4">
                     <SubjectsBarChart payload={curr.payload} />
                   </div>
