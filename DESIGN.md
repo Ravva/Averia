@@ -30,7 +30,7 @@ Color commits as hairline structure and data, not washes. Neutrals are cool; war
 `--accent` indigo `#4F46E5` / dark `#8B85F0`; `--accent-ink` on-accent text; `--accent-soft` tinted fill. Used for primary buttons, focus rings, selection, checked controls, meter fill. Never for data.
 
 ## Typography
-- Text face: Golos Text (already self-hosted via next/font). Display serif (PT Serif) retained for report titles only.
+- Text face: Golos Text (already self-hosted via next/font). Display serif (Spectral) retained for report titles only.
 - Figures: monospace + `font-variant-numeric: tabular-nums` so columns never jump.
 - Scale: Display 44/1.05 · Title 30/1.15 · Heading 20/1.3 · Body 16/1.5 · Small 13/1.45 · Micro 11/1.2 (uppercase, +0.08em tracking).
 - Reading measure 60–75ch; tracking floor −0.03em.

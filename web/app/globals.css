@@ -112,7 +112,7 @@
   --color-ring: var(--ink-2);
 
   --font-sans: var(--font-golos), "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: var(--font-ptserif), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-spectral), Georgia, "Times New Roman", serif;
   --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
 
   --radius-sm: 4px;

@@ -32,3 +32,7 @@ Thumbs.db
 *.log
 __pycache__/
 *.pyc
+
+# local deployment helper scripts (Appwrite Sites tooling, not app code)
+web/scripts/_*.ts
+Averia-deploy.tar.gz

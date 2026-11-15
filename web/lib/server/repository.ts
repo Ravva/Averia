@@ -1,6 +1,6 @@
 import "server-only";
 import { Query } from "node-appwrite";
-import { tablesDb, DATABASE_ID, TABLES } from "./appwrite";
+import { tablesDb, DATABASE_ID, TABLES, withRetry } from "./appwrite";
 import type { ClassRoom, Invite, InviteStatus, Payload, Role, Snapshot } from "@/lib/types";
 
 interface Row {
@@ -58,51 +58,61 @@ function toSnapshot(row: Row): Snapshot {
 }
 
 export async function listUsers() {
-  const rows = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.profiles,
-    queries: [Query.orderAsc("createdAt"), Query.limit(200)],
-  });
+  const rows = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.profiles,
+      queries: [Query.orderAsc("createdAt"), Query.limit(200)],
+    }),
+  );
   return (rows.rows as unknown as Row[]).map(toUser);
 }
 
 export async function listClasses(includeDeleted = false) {
   const queries: string[] = [Query.orderAsc("name"), Query.limit(500)];
   if (!includeDeleted) queries.push(Query.isNull("deletedAt"));
-  const rows = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.classes,
-    queries,
-  });
+  const rows = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.classes,
+      queries,
+    }),
+  );
   return (rows.rows as unknown as Row[]).map(toClass);
 }
 
 export async function listInvites() {
-  const rows = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.invites,
-    queries: [Query.orderDesc("createdAt"), Query.limit(500)],
-  });
+  const rows = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.invites,
+      queries: [Query.orderDesc("createdAt"), Query.limit(500)],
+    }),
+  );
   return (rows.rows as unknown as Row[]).map(toInvite);
 }
 
 export async function listSnapshots(classId?: string) {
   const queries: string[] = [Query.orderAsc("uploadedAt"), Query.limit(1000)];
   if (classId) queries.push(Query.equal("classId", classId));
-  const rows = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.snapshots,
-    queries,
-  });
+  const rows = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.snapshots,
+      queries,
+    }),
+  );
   return (rows.rows as unknown as Row[]).map(toSnapshot);
 }
 
 export async function getInviteByToken(token: string): Promise<Invite | null> {
-  const rows = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.invites,
-    queries: [Query.equal("token", token), Query.limit(1)],
-  });
+  const rows = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.invites,
+      queries: [Query.equal("token", token), Query.limit(1)],
+    }),
+  );
   const row = rows.rows[0] as unknown as Row | undefined;
   return row ? toInvite(row) : null;
 }

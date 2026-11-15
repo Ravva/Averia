@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { Query } from "node-appwrite";
-import { accountApi, tablesDb, usersApi, DATABASE_ID, TABLES } from "./appwrite";
+import { accountApi, tablesDb, usersApi, DATABASE_ID, TABLES, withRetry } from "./appwrite";
 import type { Role } from "@/lib/types";
 
 const SESSION_COOKIE = "averia_session";
@@ -69,17 +69,19 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   if (!sessionId) return null;
 
   const tables = tablesDb();
-  const profiles = await tables.listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.profiles,
-    queries: [Query.limit(100)],
-  });
+  const profiles = await withRetry(() =>
+    tables.listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.profiles,
+      queries: [Query.limit(100)],
+    }),
+  );
 
   const users = usersApi();
   for (const row of profiles.rows as unknown as ProfileRow[]) {
     let sessions;
     try {
-      sessions = await users.listSessions({ userId: row.userId });
+      sessions = await withRetry(() => users.listSessions({ userId: row.userId }));
     } catch {
       continue;
     }
@@ -99,11 +101,13 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
 export async function getUserById(userId: string): Promise<SessionUser> {
   const tables = tablesDb();
-  const rows = await tables.listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.profiles,
-    queries: [Query.equal("userId", userId), Query.limit(1)],
-  });
+  const rows = await withRetry(() =>
+    tables.listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.profiles,
+      queries: [Query.equal("userId", userId), Query.limit(1)],
+    }),
+  );
   const row = rows.rows[0] as unknown as ProfileRow | undefined;
   if (!row) throw new Error("Профиль пользователя не найден.");
   return {

@@ -1,6 +1,6 @@
 import "server-only";
 import { Query } from "node-appwrite";
-import { DATABASE_ID, TABLES, tablesDb } from "./appwrite";
+import { DATABASE_ID, TABLES, tablesDb, withRetry } from "./appwrite";
 import { listClasses } from "./repository";
 import { buildPayload } from "@/lib/arith";
 import { ParseError, readExport } from "@/lib/parse";
@@ -65,11 +65,13 @@ export async function parseUpload(
     parsed.periodStart,
   );
 
-  const existing = await tablesDb().listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.snapshots,
-    queries: [Query.equal("classId", room.id), Query.isNull("deletedAt"), Query.limit(500)],
-  });
+  const existing = await withRetry(() =>
+    tablesDb().listRows({
+      databaseId: DATABASE_ID,
+      tableId: TABLES.snapshots,
+      queries: [Query.equal("classId", room.id), Query.isNull("deletedAt"), Query.limit(500)],
+    }),
+  );
   const duplicateDate = (existing.rows as unknown as { dataDate: string }[]).some(
     (r) => r.dataDate === dataDate,
   );

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { DATABASE_ID, ID, TABLES, tablesDb } from "@/lib/server/appwrite";
+import { AppwriteException } from "node-appwrite";
+import { DATABASE_ID, ID, TABLES, tablesDb, withRetry } from "@/lib/server/appwrite";
 import { AuthError, requireUser } from "@/lib/server/session";
 import { listClasses, listSnapshots } from "@/lib/server/repository";
 import { parseUpload, UploadError } from "@/lib/server/upload";
@@ -47,22 +48,34 @@ export async function POST(request: Request) {
       });
     }
 
-    await tablesDb().createRow({
-      databaseId: DATABASE_ID,
-      tableId: TABLES.snapshots,
-      rowId: ID.unique(),
-      data: {
-        classId,
-        fileName: result.fileName,
-        dataDate: result.dataDate,
-        periodStart: result.payload.periodStart ?? "",
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: user.id,
-        students: result.payload.kpis.students,
-        avg: result.payload.kpis.avg,
-        payload: JSON.stringify(result.payload),
-      },
-    });
+    // The row id is generated once and reused across retries: if the first
+    // attempt reached the database but its response was lost, the retry hits
+    // the same row instead of creating a second copy of the same slice.
+    const rowId = ID.unique();
+    try {
+      await withRetry(() =>
+        tablesDb().createRow({
+          databaseId: DATABASE_ID,
+          tableId: TABLES.snapshots,
+          rowId,
+          data: {
+            classId,
+            fileName: result.fileName,
+            dataDate: result.dataDate,
+            periodStart: result.payload.periodStart ?? "",
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: user.id,
+            students: result.payload.kpis.students,
+            avg: result.payload.kpis.avg,
+            payload: JSON.stringify(result.payload),
+          },
+        }),
+      );
+    } catch (e) {
+      const alreadyStored =
+        e instanceof AppwriteException && e.code === 409;
+      if (!alreadyStored) throw e;
+    }
 
     return NextResponse.json({
       snapshot: { classId, fileName: result.fileName, dataDate: result.dataDate },
