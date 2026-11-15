@@ -36,7 +36,6 @@ import {
 const NAV = [
   { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard, admin: false },
   { href: "/upload", label: "Загрузка", icon: Upload, admin: false },
-  { href: "/design-system", label: "Дизайн-система", icon: Palette, admin: false },
   { href: "/classes", label: "Классы", icon: School, admin: true },
   { href: "/teachers", label: "Учителя", icon: Users, admin: true },
 ];
