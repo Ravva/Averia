@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { CalendarDays, FileSpreadsheet, Upload } from "lucide-react";
+import { CalendarDays, FileSpreadsheet, Sparkles, Upload } from "lucide-react";
 import { classSnapshots, useStore } from "@/lib/store";
 import { fmtDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Section } from "@/components/dashboard/section";
+import { AnimatedNumber } from "@/components/animated-number";
 import {
   AbsentCard,
   CategoriesCard,
@@ -70,7 +71,7 @@ export default function DashboardPage() {
 
   if (visibleClasses.length === 0) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
+      <div className="glass-surface flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
         <span className="flex size-14 items-center justify-center rounded-full bg-band text-ink2">
           <FileSpreadsheet className="size-7" />
         </span>
@@ -92,12 +93,12 @@ export default function DashboardPage() {
   return (
     <div>
       {/* page header */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink pb-4">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">
+          <h1 className="text-[clamp(2rem,4vw,3.5rem)] leading-tight font-bold tracking-[-.035em]">
             Анализ успеваемости
           </h1>
-          <p className="mt-1 text-sm text-ink2">
+          <p className="mt-1 text-base text-ink2">
             {curr
               ? `Данные на ${curr.dataDate} · период с ${curr.periodStart || "—"} · загружено ${fmtDateTime(curr.uploadedAt)}`
               : "Нет загруженных данных"}
@@ -123,7 +124,7 @@ export default function DashboardPage() {
       </div>
 
       {!curr ? (
-        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-rule py-16 text-center">
+        <div className="glass-surface flex flex-col items-center gap-4 border-dashed py-16 text-center">
           <CalendarDays className="size-8 text-ink2" />
           <p className="text-sm text-ink2">
             Для класса {room?.name} ещё нет срезов. Загрузите XLSX-экспорт «Averagemarks».
@@ -134,7 +135,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList>
+          <TabsList className="mb-6 max-w-full overflow-x-auto">
             <TabsTrigger value="current">Текущий срез</TabsTrigger>
             <TabsTrigger value="dynamics" disabled={snapshots.length < 2}>
               Динамика
@@ -151,8 +152,22 @@ export default function DashboardPage() {
               transition={{ duration: 0.2 }}
             >
               <TabsContent value="current">
+                <div className="scene-panel mb-5 grid min-h-[330px] items-end gap-7 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:p-12">
+                  <div className="relative z-10 max-w-[700px]">
+                    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-xl">
+                      <Sparkles className="size-4 text-white" /> Класс {room?.name} · данные на {curr.dataDate}
+                    </div>
+                    <h2 className="text-[clamp(2.3rem,5vw,5rem)] leading-[1.05] font-bold tracking-[-.035em]">Весь класс.<br />Вся картина.</h2>
+                    <p className="mt-5 max-w-[58ch] text-base leading-relaxed text-[#c9dcf6]">Оценки, предметы и динамика — на одном экране. Каждый показатель можно проверить в подробных данных ниже.</p>
+                  </div>
+                  <div className="relative z-10 flex w-full flex-col rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-2xl lg:w-[260px]">
+                    <span className="text-sm text-[#c9dcf6]">Средний балл класса</span>
+                    <span className="mt-3 text-[clamp(3.75rem,6vw,5.5rem)] leading-none font-semibold tracking-[-.04em]">{curr.payload.kpis.avg === null ? "—" : <AnimatedNumber value={curr.payload.kpis.avg} digits={2} />}</span>
+                    <span className="mt-5 border-t border-white/20 pt-4 text-sm text-[#c9dcf6]">{curr.payload.definitions.avg}</span>
+                  </div>
+                </div>
                 <KpiBand payload={curr.payload} />
-                <div className="mt-7 grid gap-6 lg:grid-cols-2">
+                <div className="mt-7 grid gap-4 lg:grid-cols-2">
                   <MarksCard payload={curr.payload} />
                   <CategoriesCard payload={curr.payload} />
                 </div>
@@ -161,9 +176,9 @@ export default function DashboardPage() {
                     <StrongWeak payload={curr.payload} />
                   </Section>
                 </div>
-                <Section title="Средний балл по предметам" note="цвет — уровень среднего · пунктир — порог «5»">
-                  <div className="border border-rule bg-paper2 p-4">
-                    <SubjectsBarChart payload={curr.payload} />
+                <Section title="Средний балл по предметам" note="цвет — уровень среднего · пунктир — деления шкалы">
+                  <div className="glass-surface overflow-x-auto p-5 sm:p-8">
+                    <div className="min-w-[620px]"><SubjectsBarChart payload={curr.payload} /></div>
                   </div>
                 </Section>
                 <Section title="По предметам" note="качество — доля оценок 4 и 5 · кубики — число оценок">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { CheckCircle2, GraduationCap, Link2Off, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Orbit, Link2Off, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/store";
@@ -96,12 +96,12 @@ export default function InvitePage() {
       >
         <div className="mb-6 flex items-center justify-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <GraduationCap className="size-6" />
+            <Orbit className="size-6" />
           </span>
           <span className="font-display text-2xl font-bold">Averia</span>
         </div>
 
-        <div className="rounded-lg border border-rule2 bg-paper2 p-8 shadow-sm">
+        <div className="glass-surface p-8 shadow-[var(--shadow-2)]">
           {loading ? (
             <div className="space-y-3">
               <div className="h-6 w-3/4 animate-pulse rounded bg-band" />

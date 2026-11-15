@@ -290,6 +290,74 @@ svg{display:block;max-width:100%}
   .theme-btn{display:none}
   .wrap{max-width:none;padding:0}
 }
+/* Luminous Atlas: a self-contained presentation surface */
+:root{
+  --paper:#E9EDF4;--paper-2:#FFFFFF;--ink:#132136;--ink-2:#51647C;
+  --rule:#A8B8CC;--rule-2:#D8E1EC;--band:#DCE6F1;--zebra:#F0F5FA;
+  --accent:#245DB0;--focus:#245DB0;--glass:rgba(255,255,255,.82);
+  --scene:#142E54;--glow:rgba(76,139,222,.23);--shadow:0 18px 48px rgba(22,54,100,.13);
+}
+html[data-theme="dark"]{
+  --paper:#080F1E;--paper-2:#12213A;--ink:#F3F7FF;--ink-2:#B5C7E2;
+  --rule:#476181;--rule-2:#2C4261;--band:#1B3351;--zebra:#172A44;
+  --accent:#8EBCFF;--focus:#8EBCFF;--glass:rgba(18,35,60,.82);
+  --scene:#132B50;--glow:rgba(99,161,252,.24);--shadow:0 18px 48px rgba(0,5,20,.34);
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse 85% 30% at 78% -3%,var(--glow),transparent 75%),var(--paper);background-attachment:fixed}
+.wrap{max-width:1540px;padding:36px clamp(20px,4vw,64px) 90px}
+.head{align-items:center;border:0;margin-bottom:22px;padding-bottom:0}
+.head h1{font-size:clamp(28px,3.8vw,52px);font-weight:750;letter-spacing:-.035em}
+.head .meta{font-size:15px;color:var(--ink-2);font-weight:600}
+.theme-btn{border:1px solid var(--rule-2);background:var(--glass);color:var(--ink);border-radius:10px;padding:11px 17px;box-shadow:var(--shadow);backdrop-filter:blur(20px)}
+.theme-btn:hover{background:var(--band)}
+.hero{position:relative;isolation:isolate;overflow:hidden;min-height:340px;padding:clamp(28px,4vw,58px);border:1px solid rgba(174,210,255,.28);border-radius:24px;color:#F5F9FF;background:linear-gradient(125deg,#0A1A34,var(--scene) 60%,#102442);box-shadow:0 28px 70px rgba(6,21,48,.25);display:flex;flex-direction:column;justify-content:space-between;margin-bottom:18px}
+.hero:before{content:"";position:absolute;z-index:-1;width:70%;height:140%;right:-20%;top:-90%;border-radius:50%;background:radial-gradient(ellipse,rgba(123,183,255,.42),transparent 70%);filter:blur(18px);animation:light-shift 11s ease-in-out infinite alternate}
+.hero:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(112deg,transparent 35%,rgba(255,255,255,.08) 48%,transparent 62%);background-size:220% 100%;animation:sheen 9s ease-in-out infinite}
+.hero .eyeline{font-size:15px;color:#D2E5FF;font-weight:600}
+.hero .statement{font-size:clamp(38px,6vw,86px);line-height:1.02;letter-spacing:-.045em;font-weight:760;max-width:880px;margin:18px 0 28px}
+.hero .hero-bottom{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hero .hero-note{max-width:56ch;color:#D2E5FF;font-size:16px;line-height:1.45}
+.hero .hero-grade{font-size:clamp(60px,8vw,110px);font-weight:750;line-height:.9;letter-spacing:-.06em}
+.hero .hero-grade small{font-size:14px;display:block;font-weight:600;letter-spacing:0;line-height:1.4;margin-top:16px;color:#D2E5FF}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;border:0;padding:0;margin:0 0 48px}
+.kpi,.lg,.absent,.grp{background:var(--glass);border:1px solid var(--rule-2);border-radius:16px;box-shadow:var(--shadow);backdrop-filter:blur(24px)}
+.kpi{min-height:170px;padding:24px!important}
+.kpi:first-child{border:1px solid var(--rule-2)}
+.kpi .lab{font-size:14px;font-weight:650;color:var(--ink-2)}
+.kpi .val{font-size:clamp(36px,4vw,64px);font-weight:750;margin:16px 0 9px;letter-spacing:-.04em}
+.kpi .hint{font-size:14px;line-height:1.4}
+section[aria-labelledby]{margin-bottom:52px}
+.sec{border:0;margin:0 0 18px;padding:0;align-items:baseline}
+.sec h2{font-size:clamp(21px,2vw,28px);font-weight:750;letter-spacing:-.025em}
+.sec .note{font-size:14px}
+.legend{background:none;border:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:0}
+.lg{padding:24px;border:1px solid var(--rule-2)!important}
+.lg h3{font-size:13px;color:var(--ink);letter-spacing:0;text-transform:none}
+.keyrow,.catrow{font-size:14px;padding:6px 0}
+.scale{height:24px;border-radius:7px}
+.grid2{gap:22px;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.grid2-half{grid-template-columns:repeat(2,minmax(0,1fr))}
+.absent{padding:24px;height:100%;margin:0}
+.bar-label{font-size:13px;fill:var(--ink)}.bar-value{font-size:14px;fill:var(--ink);font-weight:700}
+.axis-line{stroke:var(--rule-2);stroke-dasharray:3 6}
+.chart-frame{padding:26px;background:var(--glass);border:1px solid var(--rule-2);border-radius:16px;box-shadow:var(--shadow);overflow:auto;backdrop-filter:blur(24px)}
+.chart-frame svg{min-width:680px}
+.chart-aside{background:var(--glass);border:1px solid var(--rule-2);border-radius:16px;padding:25px;box-shadow:var(--shadow);backdrop-filter:blur(24px)}
+.chart-aside svg{max-width:100%}
+.chart-aside .sec:not(:first-child){margin-top:28px}
+.bar-grow{transform-box:fill-box;transform-origin:left center;animation:bar-enter .9s cubic-bezier(.16,1,.3,1) both}
+@keyframes bar-enter{from{transform:scaleX(0);opacity:.55}to{transform:scaleX(1);opacity:1}}
+@keyframes light-shift{to{transform:translate(-18%,26%)}}
+@keyframes sheen{0%,38%{background-position:210% 0}74%,100%{background-position:-210% 0}}
+.rk,.sbt{background:var(--glass);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.rk th,.sbt th{font-size:12px;padding:12px 10px}.rk td,.sbt td{padding:10px;font-size:14px}
+.groups{background:none;border:0;gap:14px}.grp{padding:22px;border:1px solid var(--rule-2)!important}
+.foot{font-size:14px}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.legend,.groups{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}.head{flex-direction:row;align-items:center}.head h1{font-size:clamp(26px,3vw,42px)}}
+@media(max-width:700px){.wrap{padding:22px 16px 60px}.head{align-items:flex-start;flex-wrap:wrap}.head>div:last-child{flex-wrap:wrap}.hero{min-height:360px}.kpis,.legend,.groups,.grid2-half{grid-template-columns:1fr}.kpi{min-height:0}.chart-frame{padding:12px}.chart-aside{padding:19px}.sec{align-items:flex-start;flex-direction:column;gap:4px}.lg{padding:18px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{body{background:#fff}.hero,.kpi,.lg,.absent,.grp,.chart-frame,.chart-aside,.rk,.sbt{box-shadow:none;backdrop-filter:none}.hero{color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}section[aria-labelledby]{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -306,6 +374,11 @@ svg{display:block;max-width:100%}
     </button>
   </div>
 </header>
+
+<section class="hero" aria-label="Обзор класса">
+  <div><div class="eyeline">Класс __CLASS__ · данные на __DATE__</div><div class="statement">Весь класс.<br>Вся картина.</div></div>
+  <div class="hero-bottom"><div class="hero-note">Оценки, предметы и группы внимания — одна ясная картина. Под каждым показателем — его смысл, ниже — подробные данные.</div><div class="hero-grade">__HERO_AVG__<small>средний балл класса</small></div></div>
+</section>
 
 <section class="kpis" aria-label="Показатели класса">
 __KPI__
@@ -332,8 +405,8 @@ __LEGEND__
     <span class="note">Шкала 3,50 — 5,00 · цвет = шкала оценки</span>
   </div>
   <div class="grid2">
-    <div>__SUBJCHART__</div>
-    <div>
+    <div class="chart-frame">__SUBJCHART__</div>
+    <div class="chart-aside">
       <div class="sec"><h2>Распределение оценок</h2></div>
       __MARKCHART__
       <div class="sec" style="margin-top:26px"><h2>Лучшие результаты</h2></div>
@@ -423,14 +496,13 @@ def fmt_pct(v) -> str:
 
 
 def mark_color(v) -> str:
-    """Colour by the rounded mark scale, matching the legend."""
     if v is None:
         return "var(--rule)"
-    if v >= 5:
+    if v >= 4.5:
         return "var(--m5)"
     if v >= 4:
         return "var(--m4)"
-    if v >= 3:
+    if v >= 3.5:
         return "var(--m3)"
     return "var(--m2)"
 
@@ -482,10 +554,10 @@ def build_legend(d: dict) -> str:
         )
     scale = (
         '<div class="scale">'
-        '<i style="background:var(--m2)"></i><i style="background:var(--m3)"></i>'
-        '<i style="background:var(--m4)"></i><i style="background:var(--m5)"></i>'
+        '<i style="background:var(--m3)"></i><i style="background:var(--m4)"></i>'
+        '<i style="background:var(--m5)"></i>'
         '</div>'
-        '<div class="scale-lbl"><span>2,00</span><span>3,00</span><span>4,00</span><span>5,00</span></div>'
+        '<div class="scale-lbl"><span>3,50</span><span>4,00</span><span>4,50</span><span>5,00</span></div>'
         '<div class="scale-lbl" style="margin-top:8px">средний балл предмета</div>'
     )
     cats = []
@@ -609,8 +681,8 @@ def build_subject_chart(d: dict) -> str:
                          f'fill="var(--ink-2)">нет оценок</text>')
             continue
         x0, x1 = x(lo), x(avg)
-        parts.append(f'<rect x="{x0:.1f}" y="{y + 3}" width="{max(x1 - x0, 1):.1f}" '
-                     f'height="15" fill="{mark_color(round(avg))}" rx="1.5"/>')
+        parts.append(f'<rect class="bar-grow" style="animation-delay:{min(i * .035, .5):.2f}s" x="{x0:.1f}" y="{y + 2}" width="{max(x1 - x0, 1):.1f}" '
+                     f'height="19" fill="{mark_color(avg)}" rx="5"/>')
         parts.append(f'<text class="bar-value" x="{x1 + 7:.1f}" y="{y + 15}">'
                      f'{fmt_num(avg)}</text>')
     parts.append("</svg>")
@@ -630,7 +702,7 @@ def build_mark_chart(d: dict) -> str:
         seg = m["count"] / total * w
         if seg <= 0:
             continue
-        parts.append(f'<rect x="{x:.1f}" y="0" width="{seg:.1f}" height="{bar_h}" '
+        parts.append(f'<rect class="bar-grow" x="{x:.1f}" y="0" width="{seg:.1f}" height="{bar_h}" '
                      f'fill="var(--m{m["value"]})"/>')
         x += seg
     parts.append("</svg>")
@@ -810,6 +882,7 @@ def render(d: dict, source_name: str) -> str:
     html = html.replace("__TITLE__", esc(f"Анализ успеваемости · {d['class']}"))
     html = html.replace("__CLASS__", esc(d["class"]))
     html = html.replace("__DATE__", esc(d["date"] or "—"))
+    html = html.replace("__HERO_AVG__", fmt_num(d["kpis"]["avg"]))
     html = html.replace("__KPI__", build_kpis(d))
     html = html.replace("__LEGEND__", build_legend(d))
     html = html.replace("__ABSENT__", build_absent(d))

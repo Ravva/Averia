@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Golos_Text, Spectral } from "next/font/google";
+import { Golos_Text } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,13 +10,6 @@ import "./globals.css";
 const golos = Golos_Text({
   subsets: ["cyrillic", "latin"],
   variable: "--font-golos",
-  display: "swap",
-});
-
-const spectral = Spectral({
-  subsets: ["cyrillic", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-spectral",
   display: "swap",
 });
 
@@ -38,7 +31,7 @@ export default function RootLayout({
       lang="ru"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={`${golos.variable} ${spectral.variable}`}
+      className={golos.variable}
     >
       <body className="grain antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>

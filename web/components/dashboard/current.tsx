@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { Info } from "lucide-react";
 import type { Payload } from "@/lib/types";
 import { cn, fmtNum, fmtPct, markTone, plural } from "@/lib/utils";
@@ -55,35 +55,21 @@ export function KpiBand({ payload }: { payload: Payload }) {
     },
   ];
   return (
-    <div className="grid grid-cols-2 border-b border-rule lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item, i) => (
-        <Rise
-          key={item.label}
-          delay={i * 0.07}
-          className={cn(
-            "border-rule px-5 py-5 lg:border-l",
-            i === 0 && "lg:border-l-0 lg:pl-0",
-            i % 2 === 1 && "border-l",
-            i >= 2 && "border-t lg:border-t-0",
-          )}
-        >
-          <div className="mb-1 flex items-center gap-1.5 text-[13px] text-ink2">
+        <Rise key={item.label} delay={i * 0.08} className="glass-surface relative min-h-48 overflow-hidden p-6 sm:p-7">
+          <span aria-hidden="true" className="absolute -right-5 -top-8 select-none text-[120px] leading-none font-black text-ink/[.035]">0{i + 1}</span>
+          <div className="relative mb-5 flex items-center gap-1.5 text-sm font-semibold text-ink2">
             {item.label}
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="size-3 cursor-help" />
-              </TooltipTrigger>
+              <TooltipTrigger asChild><Info className="size-4 cursor-help" /></TooltipTrigger>
               <TooltipContent>{item.hint}</TooltipContent>
             </Tooltip>
           </div>
-          <div className="text-[40px] leading-none font-semibold tracking-tight">
-            {item.value === null ? (
-              "—"
-            ) : (
-              <AnimatedNumber value={item.value} digits={item.digits} suffix={item.suffix} />
-            )}
+          <div className="relative text-[clamp(2.5rem,4vw,4.25rem)] leading-none font-bold tracking-[-.035em]">
+            {item.value === null ? "—" : <AnimatedNumber value={item.value} digits={item.digits} suffix={item.suffix} />}
           </div>
-          <div className="mt-2 text-[12px] leading-snug text-ink2">{item.hint}</div>
+          <div className="relative mt-4 max-w-[28ch] text-sm leading-snug text-ink2">{item.hint}</div>
         </Rise>
       ))}
     </div>
@@ -91,20 +77,21 @@ export function KpiBand({ payload }: { payload: Payload }) {
 }
 
 export function MarksCard({ payload }: { payload: Payload }) {
+  const reduceMotion = useReducedMotion();
   const total = payload.kpis.marks;
   return (
-    <div className="border border-rule bg-paper2 p-5">
-      <h3 className="micro-label mb-3">Распределение оценок</h3>
-      <div className="flex h-4 overflow-hidden rounded-sm">
+    <div className="glass-surface h-full p-6 sm:p-8">
+      <h3 className="mb-6 text-xl font-bold tracking-tight">Распределение оценок</h3>
+      <div className="flex h-9 overflow-hidden rounded-lg shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
         {payload.marks.map((m, i) => {
           const tone = MARK_BG[markTone(Number(m.value))];
           const width = total > 0 ? (m.count / total) * 100 : 0;
           return (
             <motion.div
               key={m.value}
-              initial={{ width: 0 }}
+              initial={reduceMotion ? false : { width: 0 }}
               animate={{ width: `${width}%` }}
-              transition={{ duration: 0.6, delay: 0.15 + i * 0.08, ease: "easeOut" }}
+              transition={{ duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 0.15 + i * 0.08, ease: "easeOut" }}
               className={cn(tone, "h-full")}
               title={`${m.value}: ${m.count}`}
             />
@@ -115,7 +102,7 @@ export function MarksCard({ payload }: { payload: Payload }) {
         <span>0</span>
         <span>{total} {plural(total, "оценка", "оценки", "оценок")}</span>
       </div>
-      <div className="mt-3 space-y-1">
+      <div className="mt-6 space-y-2.5">
         {payload.marks.map((m) => (
           <div key={m.value} className="flex items-center gap-2.5 text-[13px]">
             <span className={cn("size-3.5 shrink-0 rounded-sm", MARK_BG[markTone(Number(m.value))])} />
@@ -140,23 +127,24 @@ const CAT_TONE: Record<string, string> = {
 };
 
 export function CategoriesCard({ payload }: { payload: Payload }) {
+  const reduceMotion = useReducedMotion();
   const n = payload.kpis.students;
   return (
-    <div className="border border-rule bg-paper2 p-5">
-      <h3 className="micro-label mb-3">Категории учеников</h3>
-      <div className="flex h-4 overflow-hidden rounded-sm">
+    <div className="glass-surface h-full p-6 sm:p-8">
+      <h3 className="mb-6 text-xl font-bold tracking-tight">Категории учеников</h3>
+      <div className="flex h-9 overflow-hidden rounded-lg shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
         {payload.categories.map((c, i) => (
           <motion.div
             key={c.name}
-            initial={{ width: 0 }}
+            initial={reduceMotion ? false : { width: 0 }}
             animate={{ width: `${n > 0 ? (c.count / n) * 100 : 0}%` }}
-            transition={{ duration: 0.6, delay: 0.1 + i * 0.06, ease: "easeOut" }}
+            transition={{ duration: reduceMotion ? 0 : 0.6, delay: reduceMotion ? 0 : 0.1 + i * 0.06, ease: "easeOut" }}
             className={cn(CAT_TONE[c.name], "h-full")}
             title={`${c.name}: ${c.count}`}
           />
         ))}
       </div>
-      <div className="mt-3 space-y-1">
+      <div className="mt-6 space-y-2.5">
         {payload.categories.map((c) => (
           <div key={c.name} className="flex items-baseline gap-2 text-[13px]">
             <span className={cn("size-2.5 shrink-0 translate-y-[-1px] rounded-sm", CAT_TONE[c.name])} />
@@ -216,12 +204,12 @@ export function StrongWeak({ payload }: { payload: Payload }) {
 export function GroupsCard({ payload }: { payload: Payload }) {
   const toneBg: Record<string, string> = { m5: "bg-m5", m4: "bg-m4", m3: "bg-m3", m2: "bg-m2" };
   return (
-    <div className="grid border border-rule bg-paper2 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {payload.groups.map((g, i) => (
         <Rise
           key={g.key}
           delay={i * 0.08}
-          className={cn("border-rule p-4 sm:border-l", i === 0 && "sm:border-l-0", i >= 2 && "border-t sm:border-t-0", i === 2 && "sm:border-l-0 xl:border-l", i >= 2 && "xl:border-t-0", i === 1 && "border-t sm:border-t-0")}
+          className="glass-surface p-6"
         >
           <div className="mb-2 flex items-center gap-2">
             <span className={cn("size-2.5 rounded-sm", toneBg[g.tone])} />
@@ -251,9 +239,9 @@ export function AbsentCard({ payload }: { payload: Payload }) {
   if (withMissing.length === 0 && payload.noMarksStudents.length === 0) return null;
   const totalGaps = withMissing.reduce((s, x) => s + x.missingStudents.length, 0);
   return (
-    <div className="border border-rule bg-paper2 p-5">
+    <div className="glass-surface h-full p-6 sm:p-8">
       <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="micro-label">Отсутствуют оценки</h3>
+        <h3 className="text-xl font-bold tracking-tight">Отсутствуют оценки</h3>
         <span className="text-xs text-ink2">{totalGaps} {plural(totalGaps, "пропуск", "пропуска", "пропусков")}</span>
       </div>
       <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">

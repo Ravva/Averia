@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, Minus, TrendingDown, TrendingUp, UserMinus, UserPlus } from "lucide-react";
 import { comparePayloads } from "@/lib/dynamics";
 import type { Snapshot } from "@/lib/types";
@@ -41,6 +41,7 @@ export function DynamicsView({
   curr: Snapshot;
   onSelectStudent: (name: string) => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const cmp = useMemo(() => comparePayloads(prev.payload, curr.payload), [prev, curr]);
   const maxSubjDelta = Math.max(0.05, ...cmp.subjects.map((s) => Math.abs(s.delta ?? 0)));
 
@@ -126,9 +127,9 @@ export function DynamicsView({
                   <div className="relative h-4 flex-1">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-rule" />
                     <motion.div
-                      initial={{ width: 0 }}
+                      initial={reduceMotion ? false : { width: 0 }}
                       animate={{ width: `${width}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.03 }}
+                      transition={{ duration: reduceMotion ? 0 : 0.5, delay: reduceMotion ? 0 : i * 0.03 }}
                       className={cn(
                         "absolute inset-y-0.5 rounded-sm",
                         d >= 0 ? "left-1/2 bg-m5" : "right-1/2 bg-m2",

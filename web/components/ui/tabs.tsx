@@ -13,7 +13,7 @@ function TabsList({
   return (
     <TabsPrimitive.List
       className={cn(
-        "inline-flex h-9 items-center gap-1 rounded-md bg-band p-1 text-ink2",
+        "inline-flex h-12 items-center gap-1 rounded-xl bg-[var(--glass)] p-1.5 text-ink2 shadow-[var(--shadow-1)] ring-1 ring-[var(--glass-edge)] backdrop-blur-xl",
         className,
       )}
       {...props}
@@ -28,7 +28,7 @@ function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium transition-all cursor-pointer",
+        "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-5 py-2 text-sm font-semibold transition-all cursor-pointer disabled:opacity-50",
         "hover:text-ink data-[state=active]:bg-paper2 data-[state=active]:text-ink data-[state=active]:shadow-sm",
         className,
       )}

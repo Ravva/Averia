@@ -6,8 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useTheme } from "next-themes";
 import {
-  GraduationCap,
+  Orbit,
   LayoutDashboard,
+  Palette,
   LogOut,
   Menu,
   Moon,
@@ -35,6 +36,7 @@ import {
 const NAV = [
   { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard, admin: false },
   { href: "/upload", label: "Загрузка", icon: Upload, admin: false },
+  { href: "/design-system", label: "Дизайн-система", icon: Palette, admin: false },
   { href: "/classes", label: "Классы", icon: School, admin: true },
   { href: "/teachers", label: "Учителя", icon: Users, admin: true },
 ];
@@ -63,15 +65,15 @@ function NavLinks({
               title={collapsed ? item.label : undefined}
               aria-label={item.label}
               className={cn(
-                "relative flex items-center gap-3 rounded-md text-sm font-medium transition-colors",
-                collapsed ? "size-10 justify-center" : "px-3 py-2",
-                active ? "text-ink" : "text-ink2 hover:text-ink hover:bg-band",
+                "relative flex items-center gap-3 rounded-xl text-sm font-semibold transition-colors",
+                collapsed ? "size-11 justify-center" : "px-4 py-3",
+                active ? "text-ink" : "text-ink2 hover:text-ink hover:bg-paper2/60",
               )}
             >
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-0 rounded-md bg-band border border-rule2"
+                  className="absolute inset-0 rounded-xl bg-paper2/80 shadow-[0_8px_24px_rgba(16,46,89,.12)] ring-1 ring-[var(--glass-edge)]"
                   transition={{ type: "spring", stiffness: 400, damping: 32 }}
                 />
               )}
@@ -89,15 +91,15 @@ function Brand({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <Link
       href="/dashboard"
-      className={cn("flex items-center gap-3 py-5", collapsed ? "justify-center px-2" : "px-5")}
+      className={cn("flex items-center gap-3 pt-9 pb-11", collapsed ? "justify-center px-2" : "px-6")}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-        <GraduationCap className="size-5" />
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--scene)] text-white shadow-[0_12px_28px_rgba(25,77,150,.28)] ring-1 ring-white/25">
+        <Orbit className="size-5" />
       </span>
       {!collapsed && (
         <span className="leading-tight">
-          <span className="block font-display text-lg font-bold tracking-tight">Averia</span>
-          <span className="block text-[11px] text-ink2">анализ успеваемости</span>
+          <span className="block text-xl font-bold tracking-tight">Averia<span className="text-brand">.</span></span>
+          <span className="block text-xs text-ink2">данные об успеваемости</span>
         </span>
       )}
     </Link>
@@ -115,7 +117,7 @@ function UserBlock({ collapsed = false }: { collapsed?: boolean }) {
           <button
             title={collapsed ? currentUser.name : undefined}
             className={cn(
-              "flex w-full cursor-pointer items-center gap-3 rounded-md border border-rule2 bg-paper2 text-left transition-colors hover:border-rule",
+              "flex w-full cursor-pointer items-center gap-3 rounded-xl border border-[var(--glass-edge)] bg-[var(--glass)] text-left shadow-[var(--shadow-1)] transition-colors hover:bg-paper2",
               collapsed ? "justify-center p-1.5" : "px-3 py-2.5",
             )}
           >
@@ -200,8 +202,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* desktop sidebar — collapsible to a narrow rail */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-rule2 bg-paper transition-[width] duration-300 ease-in-out lg:flex",
-          collapsed ? "w-16" : "w-60",
+          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-[var(--glass-edge)] bg-[var(--glass)] shadow-[8px_0_48px_rgba(20,48,89,.08)] backdrop-blur-2xl transition-[width] duration-300 ease-in-out lg:flex",
+          collapsed ? "w-20" : "w-64",
         )}
       >
         <Brand collapsed={collapsed} />
@@ -231,11 +233,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* mobile top bar */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-rule2 bg-paper px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--glass-edge)] bg-[var(--glass)] px-4 backdrop-blur-2xl lg:hidden">
         <Button variant="ghost" size="icon" aria-label="Меню" onClick={() => setMobileOpen(true)}>
           <Menu className="size-5" />
         </Button>
-        <span className="font-display text-base font-bold">Averia</span>
+        <span className="flex items-center gap-2 text-base font-bold"><Orbit className="size-5 text-brand" /> Averia</span>
         <ThemeToggle />
       </div>
 
@@ -274,11 +276,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main
         className={cn(
-          "min-w-0 flex-1 px-4 pt-20 pb-16 transition-[margin] duration-300 ease-in-out sm:px-6 lg:px-10 lg:pt-8",
-          collapsed ? "lg:ml-16" : "lg:ml-60",
+          "min-w-0 flex-1 px-4 pt-24 pb-20 transition-[margin] duration-300 ease-in-out sm:px-7 lg:px-12 lg:pt-12",
+          collapsed ? "lg:ml-20" : "lg:ml-64",
         )}
       >
-        <div className="mx-auto max-w-6xl">{children}</div>
+        <div className="mx-auto max-w-[1480px]">{children}</div>
       </main>
     </div>
   );

@@ -240,9 +240,9 @@ export default function ClassesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink pb-4">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Классы</h1>
+          <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-bold tracking-[-.035em]">Классы</h1>
           <p className="mt-1 text-sm text-ink2">
             {rows.length} {plural(rows.length, "класс", "класса", "классов")} · имена строго вида «9А», без дефиса
           </p>
@@ -285,7 +285,7 @@ export default function ClassesPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="group rounded-lg border border-rule2 bg-paper2 p-5 transition-colors hover:border-rule"
+              className="glass-surface group p-6 transition-[transform,box-shadow] hover:-translate-y-1 hover:shadow-[var(--shadow-2)]"
             >
               <div className="mb-3 flex items-start justify-between">
                 <span className="font-display text-3xl font-bold tracking-tight">{room.name}</span>

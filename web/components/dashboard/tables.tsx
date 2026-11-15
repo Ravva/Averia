@@ -67,7 +67,7 @@ export function SubjectsTable({ payload }: { payload: Payload }) {
   }, [payload.subjects, sort]);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="glass-surface overflow-x-auto p-3 sm:p-5">
       <table className="atlas-table min-w-[680px]">
         <thead>
           <tr>
@@ -104,7 +104,7 @@ export function RankingTable({
   onSelect: (name: string) => void;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="glass-surface overflow-x-auto p-3 sm:p-5">
       <table className="atlas-table min-w-[560px]">
         <thead>
           <tr>

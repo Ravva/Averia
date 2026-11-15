@@ -132,8 +132,8 @@ export default function UploadPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="mb-6 border-b-2 border-ink pb-4">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Загрузка оценок</h1>
+      <div className="mb-8">
+        <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-bold tracking-[-.035em]">Загрузка оценок</h1>
         <p className="mt-1 text-sm text-ink2">
           XLSX-экспорт «Averagemarks» со средними баллами. Файл разбирается на сервере,
           в базу попадает готовый срез.
@@ -178,8 +178,8 @@ export default function UploadPage() {
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               className={cn(
-                "flex cursor-pointer flex-col items-center gap-4 rounded-lg border-2 border-dashed px-6 py-16 text-center transition-all",
-                dragOver ? "border-primary bg-primary/5 scale-[1.01]" : "border-rule bg-paper2 hover:border-ink2",
+                "glass-surface flex cursor-pointer flex-col items-center gap-4 border-2 border-dashed px-6 py-20 text-center transition-all",
+                dragOver ? "border-primary bg-primary/5 scale-[1.01]" : "border-rule hover:border-brand hover:shadow-[var(--shadow-2)]",
               )}
             >
               <motion.span
@@ -203,7 +203,7 @@ export default function UploadPage() {
                 }}
               />
             </div>
-            <div className="mt-4 rounded-md border border-rule2 bg-paper2 p-4 text-[13px] leading-relaxed text-ink2">
+            <div className="glass-surface mt-4 p-5 text-sm leading-relaxed text-ink2">
               <p className="mb-1 font-semibold text-ink">Что распознаётся автоматически</p>
               Дата и период из шапки · класс вида «9А» · строка «Обучающийся» · предметы.
               Значение 0,00 считается отсутствием оценки, а не нулём.

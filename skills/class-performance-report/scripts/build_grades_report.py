@@ -19,6 +19,7 @@ Six sheets, every figure a live formula. See SKILL.md for the layout.
 
 from __future__ import annotations
 
+from copy import copy
 import argparse
 import sys
 
@@ -34,20 +35,21 @@ from openpyxl.utils import get_column_letter
 from openpyxl.workbook.properties import CalcProperties
 
 # ---------------------------------------------------------------- palette ---
-NAVY, BLUE, LIGHT, BAND, GREY = "1F3864", "2E5C9A", "EAF0F8", "F5F8FC", "595959"
-GREEN, GREEN_T = "C6EFCE", "006100"
-AMBER, AMBER_T = "FFEB9C", "9C6500"
-RED, RED_T = "FFC7CE", "9C0006"
-DRED, DRED_T = "FF9B9B", "7A0000"
+NAVY, BLUE, LIGHT, BAND, GREY = "142E54", "245DB0", "E9F1FB", "F2F6FB", "51647C"
+GREEN, GREEN_T = "DDF2E5", "235F3C"
+AMBER, AMBER_T = "F8ECC2", "715615"
+RED, RED_T = "F9DFCC", "844619"
+DRED, DRED_T = "FBDCDD", "932323"
+GRADE_COLORS = {5: "4C9A6A", 4: "C9A227", 3: "C77B3C", 2: "DC2626"}
 
-THIN = Side(style="thin", color="BFC9D9")
-HAIR = Side(style="hair", color="D6DEEA")
+THIN = Side(style="thin", color="CAD8E8")
+HAIR = Side(style="hair", color="DFE7F1")
 BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 
-# chart surface: dark navy panel with light ink, matching the sheet header
-CHART_BG, CHART_INK, CHART_DIM = "1F3864", "FFFFFF", "BFD1E8"
-CHART_GRID = "3C5A8C"
-CAT_COLORS = ["70AD47", "FFC000", "5B9BD5", "ED7D31", "A5A5A5", "E15759"]
+CHART_BG, CHART_INK, CHART_DIM = "FFFFFF", "132136", "51647C"
+CHART_GRID = "D8E1EC"
+CAT_COLORS = [GRADE_COLORS[5], GRADE_COLORS[4], GRADE_COLORS[4],
+              GRADE_COLORS[3], GRADE_COLORS[3], GRADE_COLORS[2]]
 MARK_COLORS = {5: (GREEN, GREEN_T), 4: (AMBER, AMBER_T), 3: (RED, RED_T), 2: (DRED, DRED_T)}
 
 CATEGORIES = [
@@ -109,15 +111,15 @@ def read_source(path: str, sheet: str | None, header_cell: str | None):
 def title_block(ws, text, sub, last_col):
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=last_col)
     c = ws.cell(1, 1, text)
-    c.font = Font(name="Calibri", bold=True, size=16, color="FFFFFF")
+    c.font = Font(name="Aptos Display", bold=True, size=20, color="FFFFFF")
     c.fill = PatternFill("solid", fgColor=NAVY)
     c.alignment = Alignment(horizontal="left", vertical="center", indent=1)
-    ws.row_dimensions[1].height = 30
+    ws.row_dimensions[1].height = 42
     ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=last_col)
     c2 = ws.cell(2, 1, sub)
-    c2.font = Font(name="Calibri", size=10, color=GREY, italic=True)
+    c2.font = Font(name="Aptos", size=10, color=GREY)
     c2.alignment = Alignment(horizontal="left", vertical="center", indent=1)
-    ws.row_dimensions[2].height = 18
+    ws.row_dimensions[2].height = 26
 
 
 def header_row(ws, row, values, height=34):
@@ -179,7 +181,7 @@ def _title_text(chart):
 
 
 def style_chart(chart, *, gridlines=False, legend=False, label_sz=900, cat_rot=None):
-    """Paint the plot area dark navy with light ink, matching the sheet header."""
+    """Style charts for a light worksheet with data in grade colors."""
     from openpyxl.chart.shapes import GraphicalProperties
     from openpyxl.drawing.line import LineProperties
 
@@ -472,7 +474,7 @@ def build(frame, students, subjects, out_path, class_name):
     ws4.column_dimensions[get_column_letter(c_skey)].hidden = True
     ws4.conditional_formatting.add(f"B{sr0}:B{sr1}",
         DataBarRule(start_type="num", start_value=3.5, end_type="num", end_value=5,
-                    color="5B9BD5", showValue=True))
+                    color=GRADE_COLORS[5], showValue=True))
     for mark, (fill, fc) in MARK_COLORS.items():
         cc2 = get_column_letter(3 + (5 - mark))
         ws4.conditional_formatting.add(f"{cc2}{sr0}:{cc2}{sr1}",
@@ -492,7 +494,10 @@ def build(frame, students, subjects, out_path, class_name):
     h.x_axis.scaling.min = 3
     h.x_axis.scaling.max = 5
     h.x_axis.majorGridlines = None
-    h.series[0].graphicalProperties = GraphicalProperties(solidFill="5B9BD5")
+    h.series[0].graphicalProperties = GraphicalProperties(solidFill=GRADE_COLORS[5])
+    h.series[0].data_points = [DataPoint(idx=i, spPr=GraphicalProperties(
+        solidFill=GRADE_COLORS[5 if avg >= 4.5 else 4 if avg >= 4 else 3 if avg >= 3.5 else 2]
+    )) for i, avg in enumerate(float(frame.iloc[:, i].mean()) for i in range(m))]
     style_chart(h)
     ws4.add_chart(h, f"B{sr1 + 4}")
 
@@ -505,7 +510,7 @@ def build(frame, students, subjects, out_path, class_name):
     st.add_data(Reference(ws4, min_col=3, max_col=6, min_row=4, max_row=sr1), titles_from_data=True)
     st.set_categories(Reference(ws4, min_col=1, min_row=sr0, max_row=sr1))
     st.height, st.width = 15.5, 24
-    for srs, colr in zip(st.series, ["70AD47", "FFC000", "E15759", "9C0006"]):
+    for srs, colr in zip(st.series, [GRADE_COLORS[5], GRADE_COLORS[4], GRADE_COLORS[3], GRADE_COLORS[2]]):
         srs.graphicalProperties = GraphicalProperties(solidFill=colr)
     # 16 subjects: rotate the category labels so every one of them is readable
     st.x_axis.delete = False
@@ -713,7 +718,7 @@ def build(frame, students, subjects, out_path, class_name):
     bar.dataLabels.showVal = True
     bar.gapWidth = 55
     pts = []
-    for idx, colr in enumerate(["70AD47", "FFC000", "E15759", "9C0006"]):
+    for idx, colr in enumerate([GRADE_COLORS[5], GRADE_COLORS[4], GRADE_COLORS[3], GRADE_COLORS[2]]):
         pt = DataPoint(idx=idx)
         pt.graphicalProperties = GraphicalProperties(solidFill=colr)
         pts.append(pt)
@@ -761,7 +766,7 @@ def build(frame, students, subjects, out_path, class_name):
             if i % 2 == 1:
                 cell.fill = PatternFill("solid", fgColor=BAND)
         if i < 3:
-            ws5.cell(r, 1).fill = PatternFill("solid", fgColor="FFD966")
+            ws5.cell(r, 1).fill = PatternFill("solid", fgColor=AMBER)
 
     ws5.freeze_panes = "A5"
     ws5.column_dimensions["A"].width = 8
@@ -787,7 +792,11 @@ def build(frame, students, subjects, out_path, class_name):
     rt.x_axis.scaling.min = 3
     rt.x_axis.scaling.max = 5
     rt.x_axis.majorGridlines = None
-    rt.series[0].graphicalProperties = GraphicalProperties(solidFill="5B9BD5")
+    rt.series[0].graphicalProperties = GraphicalProperties(solidFill=GRADE_COLORS[5])
+    ranked_averages = sorted((float(frame.iloc[i].mean()) for i in range(n)), reverse=True)
+    rt.series[0].data_points = [DataPoint(idx=i, spPr=GraphicalProperties(
+        solidFill=GRADE_COLORS[5 if avg >= 4.5 else 4 if avg >= 4 else 3 if avg >= 3.5 else 2]
+    )) for i, avg in enumerate(ranked_averages)]
     # categories run bottom-up by default; flip so rank 1 sits on top
     rt.y_axis.scaling.orientation = "maxMin"
     rt.y_axis.delete = False
@@ -844,6 +853,19 @@ def build(frame, students, subjects, out_path, class_name):
 
     for ws in wb.worksheets:
         ws.sheet_view.showGridLines = False
+        ws.sheet_view.zoomScale = 85
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.print_options.gridLines = False
+        ws.sheet_properties.outlinePr.summaryBelow = True
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.value is not None and cell.font.name == "Calibri":
+                    current = copy(cell.font)
+                    current.name = "Aptos"
+                    cell.font = current
+        for row_idx in range(5, ws.max_row + 1):
+            if ws.row_dimensions[row_idx].height is None and ws.title != "Методика":
+                ws.row_dimensions[row_idx].height = 23
         ws.page_setup.orientation = "landscape"
         ws.page_setup.fitToWidth = 1
         ws.page_setup.fitToHeight = 0

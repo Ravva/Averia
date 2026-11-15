@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 
 /* Catmull-Rom spline -> cubic Bezier path, for a smooth sinusoidal curve */
 function smoothPath(points: { x: number; y: number }[], tension = 0.5) {
@@ -33,6 +34,7 @@ const dynamicsData = [
 
 export function DynamicsLineChart() {
   const [active, setActive] = useState<number | null>(null);
+  const reduceMotion = useReducedMotion();
   const W = 720;
   const H = 320;
   const padL = 40;
@@ -71,8 +73,8 @@ export function DynamicsLineChart() {
     >
       <defs>
         <linearGradient id="dyn-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--m5)" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="var(--m5)" stopOpacity="0" />
         </linearGradient>
       </defs>
 
@@ -85,8 +87,9 @@ export function DynamicsLineChart() {
         </g>
       ))}
 
-      <path d={area} fill="url(#dyn-fill)" />
-      <path d={line} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
+      <motion.path d={area} fill="url(#dyn-fill)" initial={reduceMotion ? false : { opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : 0.5 }} />
+      <motion.path d={line} fill="none" stroke="var(--m5)" strokeWidth="2.5" strokeLinecap="round"
+        initial={reduceMotion ? false : { pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: reduceMotion ? 0 : 1.2 }} />
 
       {activePoint && (
         <line
@@ -94,7 +97,7 @@ export function DynamicsLineChart() {
           y1={padT}
           x2={activePoint.x}
           y2={H - padB}
-          stroke="var(--accent)"
+          stroke="var(--m5)"
           strokeWidth="1"
           strokeDasharray="3 4"
           opacity="0.55"
@@ -109,7 +112,7 @@ export function DynamicsLineChart() {
             cy={p.y}
             r={active === i ? 6 : 4.5}
             fill="var(--paper-2)"
-            stroke="var(--accent)"
+            stroke="var(--m5)"
             strokeWidth="2.5"
             pointerEvents="none"
           />
@@ -138,7 +141,7 @@ export function DynamicsLineChart() {
           y={pts[pts.length - 1].y - 14}
           textAnchor="end"
           className="chart-bar-value"
-          fill="var(--accent)"
+          fill="var(--m5)"
         >
           4,58
         </text>
@@ -183,7 +186,7 @@ const isoLayers: IsoLayer[] = [
     id: "excellent",
     index: "01",
     title: "createExcellence",
-    caption: "299 оценок «5». 67,2% всех отметок.",
+    caption: "212 оценок «5». 47,6% всех отметок.",
     accent: "var(--m5)",
     rows: [
       { label: "Отличники", value: "2 ученика" },
@@ -195,7 +198,7 @@ const isoLayers: IsoLayer[] = [
     id: "good",
     index: "02",
     title: "createProgress",
-    caption: "128 оценок «4». Основа качества знаний.",
+    caption: "211 оценок «4». Основа качества знаний.",
     accent: "var(--m4)",
     rows: [
       { label: "Две и более 4", value: "14 учеников" },
@@ -207,7 +210,7 @@ const isoLayers: IsoLayer[] = [
     id: "risk",
     index: "03",
     title: "createAttention",
-    caption: "17 оценок «3» и 1 «2». Точки роста.",
+    caption: "21 оценка «3» и 1 «2». Точки роста.",
     accent: "var(--m2)",
     rows: [
       { label: "Одна 3, без 2", value: "6 учеников" },

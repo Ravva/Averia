@@ -1,6 +1,7 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import type { Payload, Snapshot } from "@/lib/types";
 import { fmtNum, plural } from "@/lib/utils";
 
@@ -25,10 +26,9 @@ function trunc(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
-/* Horizontal subject bars — the atlas canon chart. The scale follows the
-   data (never above 5,00), a dashed line marks the 4,50 threshold that gives
-   a five, and each bar is tinted by the level of its average. */
 export function SubjectsBarChart({ payload }: { payload: Payload }) {
+  const reduceMotion = useReducedMotion();
+  const [active, setActive] = useState<number | null>(null);
   const subjects = [...payload.subjects]
     .filter((s) => s.avg !== null)
     .sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
@@ -51,8 +51,6 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
   const plotBottom = top + subjects.length * rowH;
   const height = plotBottom + 26;
   const x = (v: number) => plotLeft + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * plotW;
-  const threshold = 4.5;
-  const thresholdX = x(threshold);
   const valueRight = 740;
 
   return (
@@ -72,32 +70,33 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
         </g>
       ))}
 
-      {threshold >= lo && threshold <= hi && (
-        <g>
-          <line className="chart-ref" x1={thresholdX} y1={top} x2={thresholdX} y2={plotBottom} stroke="var(--m5)" />
-          <text className="chart-ref-text" x={thresholdX + 6} y={top + 10} fill="var(--m5)">
-            4,50 — порог «5»
-          </text>
-        </g>
-      )}
-
       {subjects.map((s, i) => {
         const avg = s.avg ?? 0;
         const y = top + i * rowH;
         const w = Math.max(0, x(avg) - plotLeft);
         const tone = avgTone(avg);
         return (
-          <g key={s.name}>
-            <text className="chart-bar-label" x={labelRight} y={y + 20} textAnchor="end">
+          <g key={s.name} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
+            {active === i && <rect x={0} y={y} width={746} height={rowH} rx={6} fill="var(--band)" />}
+            <text className="chart-bar-label" x={labelRight} y={y + 20} textAnchor="end" fill={active === i ? "var(--ink)" : undefined}>
               {trunc(s.name, 32)}
               <title>{s.name}</title>
             </text>
-            <rect x={plotLeft} y={y + 9} width={w} height={barH} rx={1.5} fill={tone}>
+            <motion.rect x={plotLeft} y={y + 7} width={w} height={barH + 4} rx={5} fill={tone}
+              initial={reduceMotion ? false : { scaleX: 0, opacity: 0.6 }}
+              whileInView={{ scaleX: 1, opacity: 1 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: reduceMotion ? 0 : 0.85, delay: reduceMotion ? 0 : Math.min(i * 0.035, 0.5), ease: [0.16, 1, 0.3, 1] }}
+              style={{ transformBox: "fill-box", transformOrigin: "left center", filter: active === i ? `drop-shadow(0 0 5px ${tone})` : undefined }}
+            >
               <title>{`${s.name} — ${fmtNum(avg)} · ${s.graded} ${plural(s.graded, "оценка", "оценки", "оценок")}`}</title>
-            </rect>
+            </motion.rect>
             <text className="chart-bar-value" x={valueRight} y={y + 21} textAnchor="end">
               {fmtNum(avg)}
             </text>
+            <rect x={0} y={y} width={746} height={rowH} fill="transparent" tabIndex={0}
+              role="graphics-symbol" aria-label={`${s.name}: ${fmtNum(avg)}`}
+              onFocus={() => setActive(i)} onBlur={() => setActive(null)} />
           </g>
         );
       })}
@@ -127,6 +126,8 @@ function MetricLine({
   format: (v: number) => string;
 }) {
   const gid = useId();
+  const reduceMotion = useReducedMotion();
+  const [active, setActive] = useState<number | null>(null);
   const W = 320;
   const H = 168;
   const padL = 38;
@@ -147,13 +148,13 @@ function MetricLine({
   const refTextY = lastY < refY + 12 ? refY + 14 : refY - 5;
 
   return (
-    <div className="border border-rule bg-paper2 p-4">
+    <div className="glass-surface p-5">
       <h3 className="micro-label mb-2">{title}</h3>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={title} className="block max-w-full">
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--ink)" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="var(--ink)" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--m5)" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="var(--m5)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {yTicks.map((t) => (
@@ -169,18 +170,22 @@ function MetricLine({
         <text className="chart-ref-text" x={W - padR} y={refTextY} textAnchor="end" fill="var(--m5)">
           {refLabel}
         </text>
-        <polyline points={line} fill="none" stroke="var(--ink)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <motion.polyline points={line} fill="none" stroke="var(--m5)" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round"
+          initial={reduceMotion ? false : { pathLength: 0 }} whileInView={{ pathLength: 1 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: reduceMotion ? 0 : 1.1, ease: [0.16, 1, 0.3, 1] }} />
+        {active !== null && <line x1={x(active)} x2={x(active)} y1={padT} y2={H - padB} className="chart-grid" pointerEvents="none" />}
         {points.map((p, i) => (
-          <g key={i}>
-            <circle cx={x(i)} cy={y(p.value)} r={3.25} fill="var(--paper-2)" stroke="var(--ink)" strokeWidth={2}>
-              <title>{`${p.label}: ${format(p.value)}`}</title>
-            </circle>
+          <g key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
+            <circle cx={x(i)} cy={y(p.value)} r={active === i ? 6 : 3.25} fill="var(--paper-2)" stroke="var(--m5)" strokeWidth={2} pointerEvents="none" />
             <text className="chart-bar-value" x={x(i)} y={Math.max(10, y(p.value) - 8)} textAnchor="middle">
               {format(p.value)}
             </text>
             <text className="chart-axis-text" x={x(i)} y={H - 8} textAnchor="middle">
               {p.label}
             </text>
+            <circle cx={x(i)} cy={y(p.value)} r={16} fill="transparent" tabIndex={0} role="graphics-symbol"
+              aria-label={`${p.label}: ${format(p.value)}`} onFocus={() => setActive(i)} onBlur={() => setActive(null)} />
           </g>
         ))}
       </svg>
@@ -207,7 +212,7 @@ export function HistoryChart({ snapshots }: { snapshots: Snapshot[] }) {
         lo={avgLo}
         hi={5}
         refValue={4.5}
-        refLabel="4,50 — порог «5»"
+        refLabel="4,50"
         format={(v) => fmtNum(v)}
       />
       <MetricLine

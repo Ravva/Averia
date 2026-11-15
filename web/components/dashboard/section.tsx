@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -16,10 +16,10 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={cn("mb-9", className)}>
-      <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-rule pb-2">
-        <h2 className="font-display text-lg font-semibold tracking-tight">{title}</h2>
-        {note && <span className="text-right text-xs text-ink2">{note}</span>}
+    <section className={cn("mb-12", className)}>
+      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        {note && <span className="text-right text-sm text-ink2">{note}</span>}
       </div>
       {children}
     </section>
@@ -35,11 +35,12 @@ export function Rise({
   delay?: number;
   className?: string;
 }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={reduceMotion ? false : { opacity: 0.75, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay, ease: "easeOut" }}
+      transition={{ duration: reduceMotion ? 0 : 0.55, delay: reduceMotion ? 0 : delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}

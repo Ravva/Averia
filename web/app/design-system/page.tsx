@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Check, Copy } from "lucide-react";
+import { Moon, Sun, Check, Copy, Orbit } from "lucide-react";
 import { Button } from "@ui-sdk/react/button";
 import { Toggle } from "@ui-sdk/react/toggle";
 import { Switch, SwitchThumb } from "@ui-sdk/react/switch";
@@ -52,14 +52,14 @@ const neutralRamp = [
 ];
 
 const grades = [
-  { token: "--m5", mark: "5", name: "Отлично", light: "#4C9A6A", dark: "#5FB584", count: 299 },
-  { token: "--m4", mark: "4", name: "Хорошо", light: "#C9A227", dark: "#DCBB42", count: 128 },
-  { token: "--m3", mark: "3", name: "Удовлетворительно", light: "#C77B3C", dark: "#DB9155", count: 17 },
+  { token: "--m5", mark: "5", name: "Отлично", light: "#4C9A6A", dark: "#5FB584", count: 212 },
+  { token: "--m4", mark: "4", name: "Хорошо", light: "#C9A227", dark: "#DCBB42", count: 211 },
+  { token: "--m3", mark: "3", name: "Удовлетворительно", light: "#C77B3C", dark: "#DB9155", count: 21 },
   { token: "--m2", mark: "2", name: "Неудовлетворительно", light: "#DC2626", dark: "#EB514A", count: 1 },
 ];
 
 const typeScale = [
-  { name: "Display", size: "44 / 1.05", weight: 600, sample: "4,55", cls: "text-[44px] leading-none font-semibold tracking-tight" },
+  { name: "Display", size: "44 / 1.05", weight: 600, sample: "4,41", cls: "text-[44px] leading-none font-semibold tracking-tight" },
   { name: "Title", size: "30 / 1.15", weight: 600, sample: "Анализ успеваемости", cls: "text-3xl font-semibold tracking-tight" },
   { name: "Heading", size: "20 / 1.3", weight: 600, sample: "Средний балл по предметам", cls: "text-xl font-semibold" },
   { name: "Body", size: "16 / 1.5", weight: 400, sample: "Доля учеников, имеющих только оценки 4 и 5.", cls: "text-base" },
@@ -101,9 +101,9 @@ export default function DesignSystemPage() {
       <header className="sticky top-0 z-30 border-b border-rule bg-paper/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-8 py-3.5">
           <div className="flex items-baseline gap-3">
-            <span className="text-[15px] font-semibold tracking-tight">Averia</span>
+            <span className="inline-flex items-center gap-2 text-[15px] font-semibold tracking-tight"><Orbit className="size-5 text-brand" />Averia</span>
             <span className="h-3.5 w-px bg-rule" />
-            <span className="text-[13px] text-ink2">Дизайн-система «Graphite Ledger»</span>
+            <span className="text-[13px] text-ink2">Дизайн-система «Luminous Atlas»</span>
           </div>
           <button
             type="button"
@@ -139,9 +139,9 @@ export default function DesignSystemPage() {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Дизайн-система Averia</h1>
             <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-ink2">
-              Точный измерительный инструмент для школьной аналитики. Графитовые нейтрали,
-              один индиго-акцент для интерактива и фиксированная палитра оценок — единственный
-              тёплый сигнал. Компоненты построены на ui-sdk, графики — на данных класса 9-Ю.
+              Световые поверхности и ясная типографика помогают читать школьную аналитику.
+              Цвета оценок — единственные цвета рядов данных; голубой акцент оставлен
+              для управления. Компоненты построены на ui-sdk, графики ниже иллюстративные.
             </p>
           </div>
 
@@ -288,7 +288,7 @@ export default function DesignSystemPage() {
                 <div>
                   <h3 className="micro-label mb-3">Выбор класса</h3>
                   <Select items={["9-Ю", "7-Б", "10-В"]} value={region} onValueChange={setRegion}>
-                    <SelectTrigger className="flex w-full items-center justify-between rounded-md border border-rule bg-paper2 px-3 py-2 text-sm">
+                    <SelectTrigger aria-label="Выбор класса" className="flex w-full items-center justify-between rounded-md border border-rule bg-paper2 px-3 py-2 text-sm">
                       <SelectValue placeholder="Выберите класс" />
                       <span className="text-ink2">▾</span>
                     </SelectTrigger>
@@ -402,7 +402,7 @@ export default function DesignSystemPage() {
                     <MeterValue className="font-mono text-sm font-medium" />
                   </div>
                   <MeterTrack className="h-2 overflow-hidden rounded-full bg-band">
-                    <MeterIndicator className="h-full rounded-full bg-brand" />
+                    <MeterIndicator className="h-full rounded-full bg-m5" />
                   </MeterTrack>
                 </Meter>
               </div>
@@ -411,7 +411,7 @@ export default function DesignSystemPage() {
 
           {/* CHARTS */}
           <section aria-labelledby="charts">
-            <SectionHeading id="charts" title="Графики" note="Данные класса 9-Ю · 09.11.2026" />
+            <SectionHeading id="charts" title="Графики" note="Иллюстративные данные · не отчёт класса" />
             <div className="grid grid-cols-[1.6fr_1fr] gap-10 max-lg:grid-cols-1">
               <div>
                 <h3 className="micro-label mb-4">Средний балл по предметам</h3>
@@ -422,7 +422,7 @@ export default function DesignSystemPage() {
                 <DistributionBar />
                 <p className="mt-5 text-[13px] leading-relaxed text-ink2">
                   Каждый график дублирует цвет числом и подписью. Цвет столбца следует шкале
-                  среднего балла: зелёный — от 4,50, охра — 3,50–4,49.
+                  среднего балла: зелёный — от 4,50, жёлтый — от 4,00, оранжевый — от 3,50.
                 </p>
               </div>
             </div>
@@ -431,7 +431,7 @@ export default function DesignSystemPage() {
               <h3 className="micro-label mb-4">Динамика среднего балла</h3>
               <p className="mb-5 max-w-[62ch] text-[13px] leading-relaxed text-ink2">
                 Плавная кривая (сплайн Catmull-Rom) по срезам за учебный год. Область под линией
-                залита акцентным градиентом, точки — срезы. Данные иллюстративные.
+                залита зелёным градиентом оценки «5», точки — иллюстративные срезы.
               </p>
               <DynamicsLineChart />
             </div>
@@ -441,7 +441,7 @@ export default function DesignSystemPage() {
               <p className="mb-5 max-w-[62ch] text-[13px] leading-relaxed text-ink2">
                 Слоистая изометрическая диаграмма в стиле vercel/docs-diagrams: парящие плоскости,
                 тонкие соединительные линии и выноски. Каждый слой — группа оценок с предметами
-                и числом учеников. Построена на данных 9-Ю.
+                и числом учеников. Значения условные, не срез класса.
               </p>
               <IsometricLayers />
             </div>
@@ -449,22 +449,22 @@ export default function DesignSystemPage() {
 
           {/* THEMES */}
           <section aria-labelledby="themes">
-            <SectionHeading id="themes" title="Темы" note="Светлая и тёмная — равноправные" />
+            <SectionHeading id="themes" title="Темы" note="Светлая и тёмная — равноправные · пример 4,41" />
             <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
-              <div className="rounded-xl border border-rule bg-[#f6f7f9] p-5 text-[#16181d]">
-                <div className="micro-label mb-3" style={{ color: "#565d6b" }}>Светлая</div>
-                <div className="text-2xl font-semibold tracking-tight">4,55</div>
-                <div className="mt-1 text-[13px]" style={{ color: "#565d6b" }}>средний балл класса</div>
+              <div className="rounded-xl border border-rule bg-[#e9edf4] p-5 text-[#132136]">
+                <div className="micro-label mb-3" style={{ color: "#51647c" }}>Светлая</div>
+                <div className="text-2xl font-semibold tracking-tight">4,41</div>
+                <div className="mt-1 text-[13px]" style={{ color: "#51647c" }}>средний балл класса</div>
                 <div className="mt-4 flex gap-1.5">
                   {grades.map((g) => (
                     <span key={g.token} className="h-3 flex-1 rounded-sm" style={{ background: g.light }} />
                   ))}
                 </div>
               </div>
-              <div className="rounded-xl border border-[#2e333d] bg-[#101216] p-5 text-[#e7e9ee]">
-                <div className="micro-label mb-3" style={{ color: "#9aa3b2" }}>Тёмная</div>
-                <div className="text-2xl font-semibold tracking-tight">4,55</div>
-                <div className="mt-1 text-[13px]" style={{ color: "#9aa3b2" }}>средний балл класса</div>
+              <div className="rounded-xl border border-[#476181] bg-[#080f1e] p-5 text-[#f3f7ff]">
+                <div className="micro-label mb-3" style={{ color: "#b5c7e2" }}>Тёмная</div>
+                <div className="text-2xl font-semibold tracking-tight">4,41</div>
+                <div className="mt-1 text-[13px]" style={{ color: "#b5c7e2" }}>средний балл класса</div>
                 <div className="mt-4 flex gap-1.5">
                   {grades.map((g) => (
                     <span key={g.token} className="h-3 flex-1 rounded-sm" style={{ background: g.dark }} />
@@ -473,8 +473,8 @@ export default function DesignSystemPage() {
               </div>
             </div>
             <p className="mt-5 max-w-[62ch] text-[13px] leading-relaxed text-ink2">
-              Тёмная тема — настоящая графитовая поверхность, а не инверсия. Палитра оценок
-              осветляется для сохранения контраста; акцент смещается к более светлому индиго.
+              Тёмная тема сохраняет глубину и световые акценты, а не инвертирует белую страницу.
+              Цвета оценок становятся ярче; голубой акцент остаётся только у элементов управления.
             </p>
           </section>
         </main>

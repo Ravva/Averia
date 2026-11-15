@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
+
 const subjects = [
   { name: "Обществознание", avg: 5.0 },
   { name: "Труд (технология)", avg: 4.9 },
@@ -16,20 +21,22 @@ const subjects = [
 ];
 
 const distribution = [
-  { mark: "5", label: "отлично", count: 299, share: 67.2, color: "var(--m5)" },
-  { mark: "4", label: "хорошо", count: 128, share: 28.8, color: "var(--m4)" },
-  { mark: "3", label: "удовлетворительно", count: 17, share: 3.8, color: "var(--m3)" },
+  { mark: "5", label: "отлично", count: 212, share: 47.6, color: "var(--m5)" },
+  { mark: "4", label: "хорошо", count: 211, share: 47.4, color: "var(--m4)" },
+  { mark: "3", label: "удовлетворительно", count: 21, share: 4.7, color: "var(--m3)" },
   { mark: "2", label: "неудовлетворительно", count: 1, share: 0.2, color: "var(--m2)" },
 ];
 
 function markColor(avg: number) {
   if (avg >= 4.5) return "var(--m5)";
-  if (avg >= 3.5) return "var(--m4)";
-  if (avg >= 2.5) return "var(--m3)";
+  if (avg >= 4.0) return "var(--m4)";
+  if (avg >= 3.5) return "var(--m3)";
   return "var(--m2)";
 }
 
 export function SubjectsChart() {
+  const reduceMotion = useReducedMotion();
+  const [active, setActive] = useState<number | null>(null);
   const W = 720;
   const left = 210;
   const right = 60;
@@ -53,14 +60,21 @@ export function SubjectsChart() {
       {subjects.map((s, i) => {
         const y = top + i * rowH;
         return (
-          <g key={s.name}>
-            <text className="chart-bar-label" x={0} y={y + 15}>
+          <g key={s.name} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
+            {active === i && <rect x={0} y={y} width={W} height={rowH} rx={6} fill="var(--band)" />}
+            <text className="chart-bar-label" x={0} y={y + 15} fill={active === i ? "var(--ink)" : undefined}>
               {s.name}
             </text>
-            <rect x={left} y={y + 4} width={scale(s.avg) - left} height={14} fill={markColor(s.avg)} rx={3} />
+            <motion.rect x={left} y={y + 4} width={scale(s.avg) - left} height={14} fill={markColor(s.avg)} rx={3}
+              initial={reduceMotion ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : Math.min(i * 0.04, 0.5) }}
+              style={{ transformBox: "fill-box", transformOrigin: "left center", filter: active === i ? `drop-shadow(0 0 5px ${markColor(s.avg)})` : undefined }} />
             <text className="chart-bar-value" x={scale(s.avg) + 8} y={y + 16}>
               {s.avg.toFixed(2).replace(".", ",")}
             </text>
+            <rect x={0} y={y} width={W} height={rowH} fill="transparent" tabIndex={0}
+              role="graphics-symbol" aria-label={`${s.name}: ${s.avg.toFixed(2).replace(".", ",")}`}
+              onFocus={() => setActive(i)} onBlur={() => setActive(null)} />
           </g>
         );
       })}
@@ -69,16 +83,22 @@ export function SubjectsChart() {
 }
 
 export function DistributionBar() {
+  const reduceMotion = useReducedMotion();
+  const [active, setActive] = useState<string | null>(null);
   return (
     <div>
       <div className="flex h-9 w-full overflow-hidden rounded-md">
-        {distribution.map((d) => (
-          <div key={d.mark} style={{ width: `${d.share}%`, background: d.color }} />
+        {distribution.map((d, i) => (
+          <motion.div key={d.mark} title={`${d.mark}: ${d.count} оценок · ${d.share.toFixed(1).replace(".", ",")}%`}
+            onMouseEnter={() => setActive(d.mark)} onMouseLeave={() => setActive(null)}
+            initial={reduceMotion ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: reduceMotion ? 0 : 0.65, delay: reduceMotion ? 0 : i * 0.09 }}
+            style={{ width: `${d.share}%`, background: d.color, transformOrigin: "left center", filter: active === d.mark ? `brightness(1.18) drop-shadow(0 0 4px ${d.color})` : undefined }} />
         ))}
       </div>
       <div className="mt-4 space-y-1.5">
         {distribution.map((d) => (
-          <div key={d.mark} className="flex items-center gap-3 text-sm">
+          <div key={d.mark} className="flex items-center gap-3 rounded-md px-1 text-sm transition-colors hover:bg-band" onMouseEnter={() => setActive(d.mark)} onMouseLeave={() => setActive(null)}>
             <span className="h-3.5 w-3.5 shrink-0 rounded-sm" style={{ background: d.color }} />
             <span className="w-3 font-semibold">{d.mark}</span>
             <span className="flex-1 text-ink2">{d.label}</span>

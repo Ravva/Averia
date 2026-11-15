@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { GraduationCap, KeyRound, Mail } from "lucide-react";
+import { Orbit, KeyRound, Mail } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,23 +36,16 @@ export default function LoginPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground lg:flex"
+        className="scene-panel relative m-4 hidden w-[46%] flex-col justify-between p-12 lg:flex"
       >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, transparent, transparent 31px, currentColor 31px, currentColor 32px)",
-          }}
-        />
         <div className="relative flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-md bg-paper2/15">
-            <GraduationCap className="size-6" />
+            <Orbit className="size-6" />
           </span>
           <span className="font-display text-2xl font-bold">Averia</span>
         </div>
         <div className="relative space-y-6">
-          <h1 className="font-display text-4xl leading-tight font-bold">
+          <h1 className="text-[clamp(2.5rem,4vw,4.5rem)] leading-[1.06] font-bold tracking-[-.035em]">
             Успеваемость класса —<br />на одном экране
           </h1>
           <p className="max-w-md text-sm leading-relaxed opacity-85">
@@ -83,14 +76,14 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="w-full max-w-sm space-y-6"
+          className="glass-surface w-full max-w-md space-y-7 p-7 sm:p-10"
         >
           <div className="space-y-1 lg:hidden">
-            <span className="font-display text-2xl font-bold">Averia</span>
+            <span className="flex items-center gap-2 text-2xl font-bold"><Orbit className="size-7 text-brand" />Averia</span>
             <p className="text-sm text-ink2">анализ успеваемости класса</p>
           </div>
           <div className="space-y-1">
-            <h2 className="font-display text-2xl font-semibold">Вход для учителей</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Вход для учителей</h2>
             <p className="text-sm text-ink2">
               Регистрация — по magic-link ссылке от администратора.
             </p>

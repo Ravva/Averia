@@ -239,9 +239,9 @@ export default function TeachersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b-2 border-ink pb-4">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Учителя</h1>
+          <h1 className="text-[clamp(2rem,4vw,3.5rem)] font-bold tracking-[-.035em]">Учителя</h1>
           <p className="mt-1 text-sm text-ink2">
             {teachers.length} {plural(teachers.length, "аккаунт", "аккаунта", "аккаунтов")} · регистрация только по magic-link
           </p>
