@@ -43,7 +43,7 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
 
   const labelRight = 236;
   const plotLeft = 252;
-  const plotRight = 690;
+  const plotRight = 676;
   const plotW = plotRight - plotLeft;
   const top = 14;
   const rowH = 32;
@@ -53,6 +53,7 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
   const x = (v: number) => plotLeft + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * plotW;
   const threshold = 4.5;
   const thresholdX = x(threshold);
+  const valueRight = 740;
 
   return (
     <svg
@@ -83,10 +84,8 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
       {subjects.map((s, i) => {
         const avg = s.avg ?? 0;
         const y = top + i * rowH;
-        const barEnd = x(avg);
-        const w = Math.max(0, barEnd - plotLeft);
+        const w = Math.max(0, x(avg) - plotLeft);
         const tone = avgTone(avg);
-        const inside = barEnd > plotRight - 38;
         return (
           <g key={s.name}>
             <text className="chart-bar-label" x={labelRight} y={y + 20} textAnchor="end">
@@ -96,12 +95,7 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
             <rect x={plotLeft} y={y + 9} width={w} height={barH} rx={1.5} fill={tone}>
               <title>{`${s.name} — ${fmtNum(avg)} · ${s.graded} ${plural(s.graded, "оценка", "оценки", "оценок")}`}</title>
             </rect>
-            <text
-              className={inside ? "chart-bar-value chart-bar-value-inside" : "chart-bar-value"}
-              x={inside ? plotRight - 8 : barEnd + 7}
-              y={y + 21}
-              textAnchor={inside ? "end" : "start"}
-            >
+            <text className="chart-bar-value" x={valueRight} y={y + 21} textAnchor="end">
               {fmtNum(avg)}
             </text>
           </g>
