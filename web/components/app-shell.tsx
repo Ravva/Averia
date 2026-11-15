@@ -13,14 +13,12 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
-  RotateCcw,
   School,
   Sun,
   Upload,
   Users,
   X,
 } from "lucide-react";
-import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,7 +105,7 @@ function Brand({ collapsed = false }: { collapsed?: boolean }) {
 }
 
 function UserBlock({ collapsed = false }: { collapsed?: boolean }) {
-  const { currentUser, logout, resetDemo } = useStore();
+  const { currentUser, logout } = useStore();
   const router = useRouter();
   if (!currentUser) return null;
   return (
@@ -141,16 +139,8 @@ function UserBlock({ collapsed = false }: { collapsed?: boolean }) {
           <DropdownMenuLabel>{currentUser.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => {
-              resetDemo();
-              toast.success("Демо-данные восстановлены");
-            }}
-          >
-            <RotateCcw /> Сбросить демо-данные
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              logout();
+            onClick={async () => {
+              await logout();
               router.replace("/login");
             }}
           >

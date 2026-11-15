@@ -3,41 +3,73 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ---- Учебный атлас: design tokens (ported from the approved dashboard) ---- */
+/* ---- Graphite Ledger: design tokens ---- */
 :root {
-  --paper: #f7f5f0;
+  /* neutral ramp (cool graphite) */
+  --paper: #f6f7f9;
   --paper-2: #ffffff;
-  --ink: #1a1d21;
-  --ink-2: #5a5f66;
-  --rule: #c9c7c4;
-  --rule-2: #e3e0da;
-  --band: #efede7;
-  --zebra: #f1efe9;
+  --ink: #16181d;
+  --ink-2: #565d6b;
+  --rule: #d3d7de;
+  --rule-2: #e6e9ee;
+  --band: #eceef2;
+  --zebra: #f0f2f5;
+  /* grade palette — fixed, the only warm hues */
   --m5: #4c9a6a;
   --m4: #c9a227;
   --m3: #c77b3c;
   --m2: #dc2626;
-  --pill-ink: #1a1d21;
+  /* accent — indigo, interactive emphasis only */
+  --accent: #4f46e5;
+  --accent-ink: #ffffff;
+  --accent-soft: #eceafd;
+  --pill-ink: #16181d;
   --pill-ink-2: #ffffff;
-  --scrim: rgba(26, 29, 33, 0.45);
+  --scrim: rgba(22, 24, 29, 0.45);
+  --iso-canvas: #edf0f5;
+  --iso-card: #ffffff;
+  --iso-rule: #cbd1dc;
+  --iso-grid: #d3d9e3;
+  --iso-connector: #a3adbd;
+  --iso-text: #16181d;
+  --iso-muted: #565d6b;
+  --iso-value: #3f4654;
+  /* elevation */
+  --shadow-1: 0 1px 2px rgba(22, 24, 29, 0.06), 0 2px 8px rgba(22, 24, 29, 0.05);
+  --shadow-2: 0 4px 12px rgba(22, 24, 29, 0.1), 0 12px 32px rgba(22, 24, 29, 0.12);
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
-  --paper: #14161a;
-  --paper-2: #1b1e23;
-  --ink: #e8e6e1;
-  --ink-2: #a6abb2;
-  --rule: #3a4048;
-  --rule-2: #2a2f36;
-  --band: #1f232a;
-  --zebra: #20242b;
+  --paper: #101216;
+  --paper-2: #171a20;
+  --ink: #e7e9ee;
+  --ink-2: #9aa3b2;
+  --rule: #2e333d;
+  --rule-2: #23272f;
+  --band: #1d2129;
+  --zebra: #1a1e25;
   --m5: #5fb584;
   --m4: #dcbb42;
   --m3: #db9155;
   --m2: #eb514a;
-  --pill-ink: #14161a;
-  --pill-ink-2: #14161a;
+  --accent: #8b85f0;
+  --accent-ink: #12131a;
+  --accent-soft: #232139;
+  --pill-ink: #101216;
+  --pill-ink-2: #101216;
   --scrim: rgba(0, 0, 0, 0.6);
+  --iso-canvas: #0d0f14;
+  --iso-card: #14171e;
+  --iso-rule: #2c323e;
+  --iso-grid: #232833;
+  --iso-connector: #3a4150;
+  --iso-text: #e7e9ee;
+  --iso-muted: #9aa3b2;
+  --iso-value: #c3c9d6;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
 @theme inline {
@@ -55,6 +87,9 @@
   --color-m2: var(--m2);
   --color-pillink: var(--pill-ink);
   --color-pillink2: var(--pill-ink-2);
+  --color-brand: var(--accent);
+  --color-brand-ink: var(--accent-ink);
+  --color-brand-soft: var(--accent-soft);
 
   --color-background: var(--paper);
   --color-foreground: var(--ink);
@@ -78,11 +113,15 @@
 
   --font-sans: var(--font-golos), "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-ptserif), Georgia, "Times New Roman", serif;
+  --font-mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
 
-  --radius-sm: 2px;
-  --radius-md: 3px;
-  --radius-lg: 4px;
-  --radius-xl: 6px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
 }
 
 html {
@@ -96,20 +135,6 @@ body {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-/* paper grain — barely visible, keeps the atlas feel without noise */
-.grain::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-.dark .grain::before {
-  opacity: 0.05;
 }
 
 /* ---- scrollbar in the artifact's own language ---- */
@@ -133,8 +158,8 @@ body {
 }
 
 ::selection {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 /* ---- atlas table language ---- */
@@ -279,7 +304,7 @@ body {
 
 /* focus visibility everywhere */
 :focus-visible {
-  outline: 2px solid var(--ink-2);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 

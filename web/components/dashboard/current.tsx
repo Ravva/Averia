@@ -133,9 +133,9 @@ export function MarksCard({ payload }: { payload: Payload }) {
 const CAT_TONE: Record<string, string> = {
   "Отличник (все 5)": "bg-m5",
   "Одна 4": "bg-m4",
-  "Две и более 4": "bg-m4/60",
+  "Две и более 4": "bg-m4",
   "Одна 3, без 2": "bg-m3",
-  "Две и более 3, без 2": "bg-m3/60",
+  "Две и более 3, без 2": "bg-m3",
   "Есть оценка 2": "bg-m2",
 };
 
@@ -223,12 +223,11 @@ export function GroupsCard({ payload }: { payload: Payload }) {
           delay={i * 0.08}
           className={cn("border-rule p-4 sm:border-l", i === 0 && "sm:border-l-0", i >= 2 && "border-t sm:border-t-0", i === 2 && "sm:border-l-0 xl:border-l", i >= 2 && "xl:border-t-0", i === 1 && "border-t sm:border-t-0")}
         >
-          <div className="mb-0.5 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2">
             <span className={cn("size-2.5 rounded-sm", toneBg[g.tone])} />
             <span className="text-sm font-semibold">{g.title}</span>
             <span className="ml-auto text-lg font-semibold">{g.items.length}</span>
           </div>
-          <p className="mb-2.5 text-xs text-ink2">{g.hint}</p>
           {g.items.length === 0 ? (
             <p className="text-[13px] text-ink2 italic">нет учеников</p>
           ) : (
@@ -257,13 +256,20 @@ export function AbsentCard({ payload }: { payload: Payload }) {
         <h3 className="micro-label">Отсутствуют оценки</h3>
         <span className="text-xs text-ink2">{totalGaps} {plural(totalGaps, "пропуск", "пропуска", "пропусков")}</span>
       </div>
-      <div className="grid gap-x-8 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
         {withMissing.map((s) => (
-          <div key={s.name} className="flex items-baseline justify-between gap-3 border-b border-rule2 py-1.5 text-[13px]">
-            <span className="truncate font-medium">{s.name}</span>
-            <span className="shrink-0 text-xs text-ink2">
-              {s.missingStudents.length} уч.
-            </span>
+          <div key={s.name} className="border-b border-rule2 pb-2">
+            <div className="flex items-baseline justify-between gap-3 text-[13px]">
+              <span className="truncate font-medium">{s.name}</span>
+              <span className="shrink-0 text-xs text-ink2">
+                {s.missingStudents.length} {plural(s.missingStudents.length, "ученик", "ученика", "учеников")}
+              </span>
+            </div>
+            <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+              {s.missingStudents.map((name) => (
+                <li key={name} className="text-xs text-ink2">{name}</li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>

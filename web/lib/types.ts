@@ -79,7 +79,6 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password: string;
   role: Role;
   createdAt: string;
 }
@@ -120,7 +119,6 @@ export interface Snapshot {
 }
 
 export interface AppState {
-  sessionUserId: string | null;
   users: User[];
   classes: ClassRoom[];
   invites: Invite[];

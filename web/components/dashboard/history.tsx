@@ -18,15 +18,19 @@ export function HistoryView({
 }) {
   const { deleteSnapshot, restoreSnapshot } = useStore();
 
-  const onDelete = (s: Snapshot) => {
-    deleteSnapshot(s.id);
-    toast(`Срез ${s.dataDate} удалён`, {
-      action: {
-        label: "Вернуть",
-        onClick: () => restoreSnapshot(s.id),
-      },
-      duration: 6000,
-    });
+  const onDelete = async (s: Snapshot) => {
+    try {
+      await deleteSnapshot(s.id);
+      toast(`Срез ${s.dataDate} удалён`, {
+        action: {
+          label: "Вернуть",
+          onClick: () => restoreSnapshot(s.id),
+        },
+        duration: 6000,
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Не удалось удалить срез.");
+    }
   };
 
   return (

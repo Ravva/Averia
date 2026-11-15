@@ -58,7 +58,7 @@ function ClassFormDialog({
     setError("");
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!valid) {
       setError("Формат: параллель 7–11 и одна заглавная буква, без дефиса. Например, 9А.");
       return;
@@ -67,14 +67,18 @@ function ClassFormDialog({
       setError(`Класс ${name} уже существует.`);
       return;
     }
-    if (room) {
-      updateClass(room.id, { name, grade: Number(grade), letter: letter.toUpperCase(), teacherIds });
-      toast.success(`Класс ${name} обновлён`);
-    } else {
-      createClass({ name, grade: Number(grade), letter: letter.toUpperCase(), teacherIds });
-      toast.success(`Класс ${name} создан`);
+    try {
+      if (room) {
+        await updateClass(room.id, { name, grade: Number(grade), letter: letter.toUpperCase(), teacherIds });
+        toast.success(`Класс ${name} обновлён`);
+      } else {
+        await createClass({ name, grade: Number(grade), letter: letter.toUpperCase(), teacherIds });
+        toast.success(`Класс ${name} создан`);
+      }
+      onOpenChange(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не удалось сохранить класс.");
     }
-    onOpenChange(false);
   };
 
   return (
@@ -218,16 +222,20 @@ export default function ClassesPage() {
     );
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleting) return;
     const room = deleting;
-    deleteClass(room.id);
     setDeleting(null);
-    toast(`Класс ${room.name} удалён`, {
-      description: "Срезы данных сохранены и восстановятся вместе с классом.",
-      action: { label: "Вернуть", onClick: () => restoreClass(room.id) },
-      duration: 6000,
-    });
+    try {
+      await deleteClass(room.id);
+      toast(`Класс ${room.name} удалён`, {
+        description: "Срезы данных сохранены и восстановятся вместе с классом.",
+        action: { label: "Вернуть", onClick: () => restoreClass(room.id) },
+        duration: 6000,
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Не удалось удалить класс.");
+    }
   };
 
   return (

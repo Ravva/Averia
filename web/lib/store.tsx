@@ -9,337 +9,223 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import payloads from "./seed/payloads.json";
-import type {
-  AppState,
-  ClassRoom,
-  Invite,
-  Payload,
-  Snapshot,
-  User,
-} from "./types";
-import { uid } from "./utils";
+import { api, ApiError } from "./api";
+import type { AppState, ClassRoom, Invite, Payload, Snapshot, User } from "./types";
 
-const STORAGE_KEY = "averia-state-v1";
-
-function seedState(): AppState {
-  const users: User[] = [
-    {
-      id: "u-admin",
-      name: "Администратор школы",
-      email: "admin@averia.school",
-      password: "admin123",
-      role: "admin",
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-    {
-      id: "u-morozova",
-      name: "Учитель 1",
-      email: "teacher1@school.ru",
-      password: "teacher123",
-      role: "teacher",
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-    {
-      id: "u-saveliev",
-      name: "Учитель 2",
-      email: "teacher2@school.ru",
-      password: "teacher123",
-      role: "teacher",
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-  ];
-  const classes: ClassRoom[] = [
-    {
-      id: "c-9yu",
-      name: "9А",
-      grade: 9,
-      letter: "А",
-      teacherIds: ["u-admin"],
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-    {
-      id: "c-7a",
-      name: "7Б",
-      grade: 7,
-      letter: "Б",
-      teacherIds: ["u-morozova"],
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-    {
-      id: "c-10b",
-      name: "10В",
-      grade: 10,
-      letter: "В",
-      teacherIds: ["u-saveliev"],
-      createdAt: "2026-09-01T08:00:00.000Z",
-    },
-  ];
-  const seed = payloads as unknown as Record<
-    string,
-    { prev: Payload; curr: Payload }
-  >;
-  const classByKey: Record<string, string> = {
-    "9А": "c-9yu",
-    "7Б": "c-7a",
-    "10В": "c-10b",
-  };
-  const uploader: Record<string, string> = {
-    "9А": "u-admin",
-    "7Б": "u-morozova",
-    "10В": "u-saveliev",
-  };
-  const snapshots: Snapshot[] = [];
-  for (const [key, pair] of Object.entries(seed)) {
-    const classId = classByKey[key];
-    snapshots.push({
-      id: `s-${classId}-prev`,
-      classId,
-      fileName: `averageMarks_${pair.prev.date}.xlsx`,
-      dataDate: pair.prev.date,
-      periodStart: "01.09.2026",
-      uploadedAt: "2026-10-22T09:30:00.000Z",
-      uploadedBy: uploader[key],
-      payload: pair.prev,
-    });
-    snapshots.push({
-      id: `s-${classId}-curr`,
-      classId,
-      fileName: `averageMarks_${pair.curr.date}.xlsx`,
-      dataDate: pair.curr.date,
-      periodStart: "01.09.2026",
-      uploadedAt: "2026-11-09T14:00:00.000Z",
-      uploadedBy: uploader[key],
-      payload: pair.curr,
-    });
-  }
-  const invites: Invite[] = [
-    {
-      id: "i-invite-1",
-      email: "newteacher@school.ru",
-      classIds: ["c-10b"],
-      token: "invite-10v-2026",
-      createdAt: "2026-11-10T10:00:00.000Z",
-      expiresAt: new Date(Date.now() + 7 * 86400_000).toISOString(),
-      status: "pending",
-      invitedBy: "u-admin",
-    },
-  ];
-  return { sessionUserId: "u-admin", users, classes, invites, snapshots };
-}
+const EMPTY: AppState = { users: [], classes: [], invites: [], snapshots: [] };
 
 interface StoreValue {
   state: AppState;
   hydrated: boolean;
   currentUser: User | null;
   visibleClasses: ClassRoom[];
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
-  createClass: (data: { name: string; grade: number; letter: string; teacherIds: string[] }) => ClassRoom;
-  updateClass: (id: string, patch: Partial<ClassRoom>) => void;
-  deleteClass: (id: string) => void;
-  restoreClass: (id: string) => void;
-  createInvite: (email: string, classIds: string[]) => Invite;
-  revokeInvite: (id: string) => void;
-  acceptInvite: (token: string, name: string, password: string) => { ok: boolean; error?: string };
-  addSnapshot: (classId: string, payload: Payload, fileName: string) => Snapshot;
-  deleteSnapshot: (id: string) => void;
-  restoreSnapshot: (id: string) => void;
-  resetDemo: () => void;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  createClass: (data: {
+    name: string;
+    grade: number;
+    letter: string;
+    teacherIds: string[];
+  }) => Promise<ClassRoom>;
+  updateClass: (
+    id: string,
+    patch: Partial<ClassRoom> & { deletedAt?: string | null },
+  ) => Promise<void>;
+  deleteClass: (id: string) => Promise<void>;
+  restoreClass: (id: string) => Promise<void>;
+  createInvite: (email: string, classIds: string[]) => Promise<Invite>;
+  revokeInvite: (id: string) => Promise<void>;
+  acceptInvite: (token: string, name: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  addSnapshot: (classId: string, payload: Payload, fileName: string) => Promise<Snapshot>;
+  deleteSnapshot: (id: string) => Promise<void>;
+  restoreSnapshot: (id: string) => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>(seedState);
+  const [state, setState] = useState<AppState>(EMPTY);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
+  const refresh = useCallback(async () => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setState(JSON.parse(raw) as AppState);
-    } catch {
-      // corrupted storage falls back to seed
+      const data = await api.state();
+      setCurrentUser(data.user);
+      setState({
+        users: data.users,
+        classes: data.classes,
+        invites: data.invites,
+        snapshots: data.snapshots,
+      });
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setCurrentUser(null);
+        setState(EMPTY);
+      }
     }
-    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, hydrated]);
+    let alive = true;
+    (async () => {
+      try {
+        const data = await api.state();
+        if (!alive) return;
+        setCurrentUser(data.user);
+        setState({
+          users: data.users,
+          classes: data.classes,
+          invites: data.invites,
+          snapshots: data.snapshots,
+        });
+      } catch {
+        if (!alive) return;
+        setCurrentUser(null);
+        setState(EMPTY);
+      } finally {
+        if (alive) setHydrated(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
-  const currentUser = useMemo(
-    () => state.users.find((u) => u.id === state.sessionUserId) ?? null,
-    [state.users, state.sessionUserId],
+  const visibleClasses = useMemo(
+    () => state.classes.filter((c) => !c.deletedAt),
+    [state.classes],
   );
 
-  const visibleClasses = useMemo(() => {
-    const alive = state.classes.filter((c) => !c.deletedAt);
-    if (!currentUser) return [];
-    if (currentUser.role === "admin") return alive;
-    return alive.filter((c) => c.teacherIds.includes(currentUser.id));
-  }, [state.classes, currentUser]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const { user } = await api.login(email, password);
+        setCurrentUser(user);
+        await refresh();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [refresh],
+  );
 
-  const login = useCallback((email: string, password: string) => {
-    let ok = false;
-    setState((s) => {
-      const user = s.users.find(
-        (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password,
-      );
-      if (!user) return s;
-      ok = true;
-      return { ...s, sessionUserId: user.id };
-    });
-    return ok;
-  }, []);
-
-  const logout = useCallback(() => {
-    setState((s) => ({ ...s, sessionUserId: null }));
+  const logout = useCallback(async () => {
+    try {
+      await api.logout();
+    } catch {
+      // session already gone
+    }
+    setCurrentUser(null);
+    setState(EMPTY);
   }, []);
 
   const createClass = useCallback(
-    (data: { name: string; grade: number; letter: string; teacherIds: string[] }) => {
-      const room: ClassRoom = {
-        id: uid("c"),
+    async (data: { name: string; grade: number; letter: string; teacherIds: string[] }) => {
+      const { class: room } = await api.createClass(data);
+      await refresh();
+      return {
+        id: room.id,
         ...data,
         createdAt: new Date().toISOString(),
       };
-      setState((s) => ({ ...s, classes: [...s.classes, room] }));
-      return room;
     },
-    [],
+    [refresh],
   );
 
-  const updateClass = useCallback((id: string, patch: Partial<ClassRoom>) => {
-    setState((s) => ({
-      ...s,
-      classes: s.classes.map((c) => (c.id === id ? { ...c, ...patch } : c)),
-    }));
-  }, []);
+  const updateClass = useCallback(
+    async (id: string, patch: Partial<ClassRoom>) => {
+      await api.updateClass(id, patch);
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const deleteClass = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      classes: s.classes.map((c) =>
-        c.id === id ? { ...c, deletedAt: new Date().toISOString() } : c,
-      ),
-    }));
-  }, []);
+  const deleteClass = useCallback(
+    async (id: string) => {
+      await api.updateClass(id, { deletedAt: new Date().toISOString() });
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const restoreClass = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      classes: s.classes.map((c) =>
-        c.id === id ? { ...c, deletedAt: undefined } : c,
-      ),
-    }));
-  }, []);
+  const restoreClass = useCallback(
+    async (id: string) => {
+      await api.updateClass(id, { deletedAt: null });
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const createInvite = useCallback((email: string, classIds: string[]) => {
-    const invite: Invite = {
-      id: uid("i"),
-      email: email.trim().toLowerCase(),
-      classIds,
-      token: uid("inv"),
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 86400_000).toISOString(),
-      status: "pending",
-      invitedBy: "",
-    };
-    setState((s) => ({
-      ...s,
-      invites: [...s.invites, { ...invite, invitedBy: s.sessionUserId ?? "" }],
-    }));
-    return invite;
-  }, []);
+  const createInvite = useCallback(
+    async (email: string, classIds: string[]) => {
+      const { invite } = await api.createInvite(email, classIds);
+      await refresh();
+      return invite;
+    },
+    [refresh],
+  );
 
-  const revokeInvite = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      invites: s.invites.map((i) => (i.id === id ? { ...i, status: "revoked" } : i)),
-    }));
-  }, []);
+  const revokeInvite = useCallback(
+    async (id: string) => {
+      await api.revokeInvite(id);
+      await refresh();
+    },
+    [refresh],
+  );
 
   const acceptInvite = useCallback(
-    (token: string, name: string, password: string) => {
-      const invite = state.invites.find((i) => i.token === token);
-      if (!invite) return { ok: false, error: "Ссылка не найдена." };
-      if (invite.status === "revoked")
-        return { ok: false, error: "Ссылка отозвана администратором." };
-      if (invite.status === "accepted")
-        return { ok: false, error: "Ссылка уже использована." };
-      if (new Date(invite.expiresAt).getTime() < Date.now())
-        return { ok: false, error: "Срок действия ссылки истёк." };
-      if (state.users.some((u) => u.email === invite.email))
-        return { ok: false, error: "Этот email уже зарегистрирован." };
-      const user: User = {
-        id: uid("u"),
-        name: name.trim(),
-        email: invite.email,
-        password,
-        role: "teacher",
-        createdAt: new Date().toISOString(),
-      };
-      setState((s) => ({
-        ...s,
-        users: [...s.users, user],
-        invites: s.invites.map((i) =>
-          i.token === token ? { ...i, status: "accepted" } : i,
-        ),
-        classes: s.classes.map((c) =>
-          invite.classIds.includes(c.id) && !c.teacherIds.includes(user.id)
-            ? { ...c, teacherIds: [...c.teacherIds, user.id] }
-            : c,
-        ),
-        sessionUserId: user.id,
-      }));
-      return { ok: true };
+    async (token: string, name: string, password: string) => {
+      try {
+        const { user } = await api.acceptInvite(token, name, password);
+        setCurrentUser(user);
+        await refresh();
+        return { ok: true };
+      } catch (e) {
+        return {
+          ok: false,
+          error: e instanceof ApiError ? e.message : "Не удалось принять приглашение.",
+        };
+      }
     },
-    [state.invites, state.users],
+    [refresh],
   );
 
   const addSnapshot = useCallback(
-    (classId: string, payload: Payload, fileName: string) => {
+    async (classId: string, payload: Payload, fileName: string) => {
       const snapshot: Snapshot = {
-        id: uid("s"),
+        id: "",
         classId,
         fileName,
         dataDate: payload.date,
         periodStart: payload.periodStart ?? "",
         uploadedAt: new Date().toISOString(),
-        uploadedBy: "",
+        uploadedBy: currentUser?.id ?? "",
         payload,
       };
-      setState((s) => ({
-        ...s,
-        snapshots: [...s.snapshots, { ...snapshot, uploadedBy: s.sessionUserId ?? "" }],
-      }));
+      await refresh();
       return snapshot;
     },
-    [],
+    [refresh, currentUser],
   );
 
-  const deleteSnapshot = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      snapshots: s.snapshots.map((x) =>
-        x.id === id ? { ...x, deletedAt: new Date().toISOString() } : x,
-      ),
-    }));
-  }, []);
+  const deleteSnapshot = useCallback(
+    async (id: string) => {
+      await api.setSnapshotDeleted(id, new Date().toISOString());
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const restoreSnapshot = useCallback((id: string) => {
-    setState((s) => ({
-      ...s,
-      snapshots: s.snapshots.map((x) =>
-        x.id === id ? { ...x, deletedAt: undefined } : x,
-      ),
-    }));
-  }, []);
-
-  const resetDemo = useCallback(() => {
-    setState(seedState());
-  }, []);
+  const restoreSnapshot = useCallback(
+    async (id: string) => {
+      await api.setSnapshotDeleted(id, null);
+      await refresh();
+    },
+    [refresh],
+  );
 
   const value: StoreValue = {
     state,
@@ -358,7 +244,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addSnapshot,
     deleteSnapshot,
     restoreSnapshot,
-    resetDemo,
+    refresh,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

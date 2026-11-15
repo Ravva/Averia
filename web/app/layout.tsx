@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import "@ui-sdk/core/web.css";
 import "./globals.css";
 
 const golos = Golos_Text({

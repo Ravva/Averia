@@ -80,7 +80,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
     setCreated(null);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!emailValid) {
       setError("Укажите корректный email.");
       return;
@@ -93,8 +93,12 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
       setError("Для этого email уже есть активное приглашение.");
       return;
     }
-    const invite = createInvite(email, classIds);
-    setCreated(invite);
+    try {
+      const invite = await createInvite(email, classIds);
+      setCreated(invite);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Не удалось создать приглашение.");
+    }
   };
 
   return (
@@ -336,9 +340,13 @@ export default function TeachersPage() {
                       size="icon"
                       aria-label="Отозвать приглашение"
                       className="text-ink2 hover:text-m2"
-                      onClick={() => {
-                        revokeInvite(inv.id);
-                        toast("Приглашение отозвано");
+                      onClick={async () => {
+                        try {
+                          await revokeInvite(inv.id);
+                          toast("Приглашение отозвано");
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : "Не удалось отозвать приглашение.");
+                        }
                       }}
                     >
                       <UserX className="size-4" />

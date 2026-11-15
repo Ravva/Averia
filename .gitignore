@@ -21,6 +21,11 @@ averageMarks*.xls
 .impeccable/
 .qoder-office-xlsx-locks/
 
+# agent tooling duplicates — skills/ holds the canonical copy
+agent/
+.agents/
+.claude/
+
 # editor and OS noise
 .DS_Store
 Thumbs.db

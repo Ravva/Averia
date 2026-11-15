@@ -4,37 +4,30 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { GraduationCap, KeyRound, Mail } from "lucide-react";
-import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
-  const { login, state } = useStore();
+  const { login } = useStore();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    setBusy(true);
+    const ok = await login(email, password);
+    setBusy(false);
+    if (ok) {
       router.replace("/dashboard");
     } else {
       setError("Неверный email или пароль.");
     }
   };
-
-  const demoLogin = (demoEmail: string, demoPassword: string) => {
-    if (login(demoEmail, demoPassword)) {
-      toast.success("Вход выполнен");
-      router.replace("/dashboard");
-    }
-  };
-
-  const admin = state.users.find((u) => u.role === "admin");
-  const teacher = state.users.find((u) => u.role === "teacher");
 
   return (
     <div className="relative z-10 flex min-h-screen">
@@ -152,34 +145,21 @@ export default function LoginPage() {
                 {error}
               </motion.p>
             )}
-            <Button type="submit" className="w-full">Войти</Button>
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Проверяем…" : "Войти"}
+            </Button>
           </form>
 
           <div className="rounded-lg border border-rule2 bg-paper2 p-4">
-            <p className="micro-label mb-3">Демо-доступ</p>
-            <div className="flex flex-col gap-2">
-              {admin && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => demoLogin(admin.email, admin.password)}
-                >
-                  Администратор · {admin.email}
-                </Button>
-              )}
-              {teacher && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => demoLogin(teacher.email, teacher.password)}
-                >
-                  Учитель · {teacher.name}
-                </Button>
-              )}
-            </div>
+            <p className="micro-label mb-3">Как войти</p>
+            <p className="text-[13px] leading-relaxed text-ink2">
+              Пароль выдаёт администратор школы. Учётная запись учителя создаётся
+              по одноразовой ссылке-приглашению: откройте её, задайте имя и пароль —
+              и класс станет доступен.
+            </p>
             <p className="mt-3 text-[11px] leading-relaxed text-ink2">
-              Прототип: пароли хранятся локально в браузере. В боевой версии —
-              Appwrite Auth и magic-link сессии на сервере.
+              Пароли хранятся в Appwrite Auth. Сессия живёт в httpOnly-cookie,
+              в браузере пароля нет.
             </p>
           </div>
         </motion.div>
