@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Query } from "node-appwrite";
-import { DATABASE_ID, ID, TABLES, tablesDb } from "@/lib/server/appwrite";
+import { DATABASE_ID, ID, TABLES, tablesDb, messagingApi } from "@/lib/server/appwrite";
 import { AuthError, requireAdmin, requireUser } from "@/lib/server/session";
 import { listClasses, listUsers } from "@/lib/server/repository";
 
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
     const classIds = (body.classIds ?? []).filter((id) => classes.some((c) => c.id === id));
 
     const now = new Date();
+    const token = ID.unique();
     const row = await tablesDb().createRow({
       databaseId: DATABASE_ID,
       tableId: TABLES.invites,
@@ -60,13 +61,29 @@ export async function POST(request: Request) {
       data: {
         email,
         classIds,
-        token: ID.unique(),
+        token,
         status: "pending",
         invitedBy: admin.id,
         createdAt: now.toISOString(),
         expiresAt: new Date(now.getTime() + 7 * 86400_000).toISOString(),
       },
     });
+
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:3000";
+    const proto = request.headers.get("x-forwarded-proto") || "https";
+    const inviteUrl = `${proto}://${host}/invite/${token}`;
+
+    try {
+      await messagingApi().createEmail({
+        messageId: ID.unique(),
+        subject: "Приглашение в Аверию",
+        content: `Здравствуйте!\n\nАдминистратор пригласил вас присоединиться к школьной платформе Аверия.\n\nПерейдите по ссылке для создания аккаунта и доступа к классам: ${inviteUrl}\n\nСсылка действительна 7 дней.`,
+        html: true,
+        emails: [email],
+      });
+    } catch (mailErr) {
+      console.error("Failed to send invite email:", mailErr);
+    }
 
     return NextResponse.json({ invite: { ...row, token: String(row.token) } });
   } catch (e) {

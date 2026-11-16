@@ -1,5 +1,5 @@
 import "server-only";
-import { Client, TablesDB, Users, Account, ID } from "node-appwrite";
+import { Client, TablesDB, Users, Account, Messaging, ID } from "node-appwrite";
 
 export const DATABASE_ID = process.env.APPWRITE_DATABASE_ID ?? "averia";
 
@@ -48,6 +48,10 @@ export function usersApi(): Users {
 
 export function accountApi(): Account {
   return new Account(client());
+}
+
+export function messagingApi(): Messaging {
+  return new Messaging(client());
 }
 
 /**
