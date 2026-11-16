@@ -38,12 +38,17 @@ function ClassFormDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { state, createClass, updateClass } = useStore();
+  const { state, currentUser, createClass, updateClass } = useStore();
   const [grade, setGrade] = useState(room ? String(room.grade) : "9");
   const [letter, setLetter] = useState(room?.letter ?? "");
   const [teacherIds, setTeacherIds] = useState<string[]>(room?.teacherIds ?? []);
   const [error, setError] = useState("");
   const [normalized, setNormalized] = useState(false);
+
+  const availableUsers = useMemo(() => {
+    if (currentUser?.role === "admin") return state.users;
+    return state.users.filter((u) => u.id === currentUser?.id);
+  }, [state.users, currentUser]);
 
   const name = `${grade}${letter.toUpperCase()}`;
   const valid = CLASS_NAME_RE.test(name);
@@ -134,7 +139,7 @@ function ClassFormDialog({
           <div className="space-y-1.5">
             <Label>Классные руководители</Label>
             <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-rule2 p-2">
-              {state.users.map((u) => (
+              {availableUsers.map((u) => (
                 <label
                   key={u.id}
                   className="flex cursor-pointer items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-band"
@@ -188,16 +193,19 @@ export default function ClassesPage() {
 
   const rows = useMemo(() => {
     const alive = state.classes.filter((c) => !c.deletedAt);
+    const visible = currentUser?.role === "admin"
+      ? alive
+      : alive.filter((c) => c.teacherIds.includes(currentUser?.id ?? ""));
     const q = query.trim().toLowerCase();
     const filtered = q
-      ? alive.filter((c) => {
+      ? visible.filter((c) => {
           const teachers = state.users
             .filter((u) => c.teacherIds.includes(u.id))
             .map((u) => u.name)
             .join(" ");
           return c.name.toLowerCase().includes(q) || teachers.toLowerCase().includes(q);
         })
-      : alive;
+      : visible;
     const withMeta = filtered.map((c) => {
       const snaps = classSnapshots(state, c.id);
       const last = snaps[snaps.length - 1];
@@ -212,15 +220,9 @@ export default function ClassesPage() {
       }
     });
     return withMeta;
-  }, [state, query, sort]);
+  }, [state, query, sort, currentUser]);
 
-  if (currentUser?.role !== "admin") {
-    return (
-      <div className="py-16 text-center text-sm text-ink2">
-        Раздел доступен только администратору.
-      </div>
-    );
-  }
+
 
   const confirmDelete = async () => {
     if (!deleting) return;
@@ -247,9 +249,11 @@ export default function ClassesPage() {
             {rows.length} {plural(rows.length, "класс", "класса", "классов")} · имена строго вида «9А», без дефиса
           </p>
         </div>
-        <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-          <Plus /> Создать класс
-        </Button>
+        {currentUser?.role === "admin" && (
+          <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
+            <Plus /> Создать класс
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -296,13 +300,15 @@ export default function ClassesPage() {
                   >
                     <Pencil className="size-4" />
                   </Button>
-                  <Button
-                    variant="ghost" size="icon" aria-label={`Удалить ${room.name}`}
-                    className="hover:text-m2"
-                    onClick={() => setDeleting(room)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {currentUser?.role === "admin" && (
+                    <Button
+                      variant="ghost" size="icon" aria-label={`Удалить ${room.name}`}
+                      className="hover:text-m2"
+                      onClick={() => setDeleting(room)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="mb-3 flex flex-wrap gap-1.5">

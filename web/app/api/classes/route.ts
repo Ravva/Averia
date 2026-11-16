@@ -66,8 +66,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  let user;
   try {
-    await requireAdmin();
+    user = await requireUser();
   } catch (e) {
     if (e instanceof AuthError) {
       return NextResponse.json({ error: e.message }, { status: e.status });
@@ -92,14 +93,35 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Не указан класс." }, { status: 400 });
   }
 
-  const data: Record<string, unknown> = {};
-  if (body.name !== undefined) data.name = body.name;
-  if (body.grade !== undefined) data.grade = Number(body.grade);
-  if (body.letter !== undefined) data.letter = body.letter;
-  if (body.teacherIds !== undefined) data.teacherIds = body.teacherIds;
-  if (body.deletedAt !== undefined) data.deletedAt = body.deletedAt ?? "";
+  const existingClasses = await listClasses();
+  const targetClass = existingClasses.find((c) => c.id === body.id);
+  if (!targetClass) {
+    return NextResponse.json({ error: "Класс не найден." }, { status: 404 });
+  }
 
-  if (body.name !== undefined) {
+  if (user.role !== "admin") {
+    if (body.name !== undefined || body.grade !== undefined || body.letter !== undefined || body.deletedAt !== undefined) {
+      return NextResponse.json({ error: "Недостаточно прав для изменения параметров класса." }, { status: 403 });
+    }
+  }
+
+  const data: Record<string, unknown> = {};
+  if (user.role === "admin") {
+    if (body.name !== undefined) data.name = body.name;
+    if (body.grade !== undefined) data.grade = Number(body.grade);
+    if (body.letter !== undefined) data.letter = body.letter;
+    if (body.deletedAt !== undefined) data.deletedAt = body.deletedAt ?? "";
+  }
+  if (body.teacherIds !== undefined) {
+    if (user.role !== "admin") {
+      if (!body.teacherIds.includes(user.id)) {
+        return NextResponse.json({ error: "Вы должны включить себя в список классных руководителей." }, { status: 400 });
+      }
+    }
+    data.teacherIds = body.teacherIds;
+  }
+
+  if (user.role === "admin" && body.name !== undefined) {
     const name = String(body.name);
     if (!CLASS_NAME_RE.test(name)) {
       return NextResponse.json(
@@ -107,8 +129,7 @@ export async function PATCH(request: Request) {
         { status: 400 },
       );
     }
-    const existing = await listClasses();
-    if (existing.some((c) => c.name === name && c.id !== body.id)) {
+    if (existingClasses.some((c) => c.name === name && c.id !== body.id)) {
       return NextResponse.json({ error: `Класс ${name} уже существует.` }, { status: 409 });
     }
   }
