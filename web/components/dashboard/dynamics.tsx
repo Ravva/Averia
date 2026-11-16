@@ -70,7 +70,7 @@ export function DynamicsView({
       </Rise>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Section title="Кто вырос" note="рост среднего балла">
+        <Section title="Рост" note="рост среднего балла">
           {cmp.improved.length === 0 ? (
             <p className="text-sm text-ink2 italic">Никто не вырос — возможно, срез ранний.</p>
           ) : (
@@ -91,7 +91,7 @@ export function DynamicsView({
           )}
         </Section>
 
-        <Section title="Кто снизил" note="падение среднего балла">
+        <Section title="Снижение" note="падение среднего балла">
           {cmp.declined.length === 0 ? (
             <p className="text-sm text-ink2 italic">Снижений нет.</p>
           ) : (
@@ -122,8 +122,8 @@ export function DynamicsView({
               const d = s.delta ?? 0;
               const width = (Math.abs(d) / maxSubjDelta) * 50;
               return (
-                <div key={s.name} className="flex items-center gap-3 text-[13px]">
-                  <span className="w-44 truncate sm:w-56" title={s.name}>{s.name}</span>
+                <div key={s.name} className="flex items-center gap-3 rounded-md px-2 py-1 text-[13px] transition-colors hover:bg-band">
+                  <span className="w-44 truncate font-medium sm:w-56" title={s.name}>{s.name}</span>
                   <div className="relative h-4 flex-1">
                     <div className="absolute inset-y-0 left-1/2 w-px bg-rule" />
                     <motion.div
@@ -168,24 +168,80 @@ export function DynamicsView({
         <Section title="Переходы между категориями" note={`${cmp.transitions.length} ${plural(cmp.transitions.length, "ученик", "ученика", "учеников")}`}>
           {cmp.transitions.length === 0 ? (
             <p className="text-sm text-ink2 italic">Категории не изменились.</p>
-          ) : (
-            <div className="space-y-1.5">
-              {cmp.transitions.map((s) => (
-                <button
-                  key={s.name}
-                  onClick={() => onSelectStudent(s.name)}
-                  className="flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-md border border-rule2 bg-paper2 px-3 py-2 text-left text-[13px] transition-colors hover:border-rule"
-                >
-                  <span className="font-medium">{s.name}</span>
-                  <span className="ml-auto flex items-center gap-1.5">
-                    <Badge variant={categoryBadgeVariant(s.prevCategory ?? "")}>{s.prevCategory}</Badge>
-                    <ArrowRight className="size-3.5 text-ink2" />
-                    <Badge variant={categoryBadgeVariant(s.currCategory ?? "")}>{s.currCategory}</Badge>
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          ) : (() => {
+            const ranks: Record<string, number> = { "Отличник": 4, "Хорошист": 3, "Успевающий": 2, "Группа риска": 1 };
+            const growth = cmp.transitions.filter((s) => (ranks[s.currCategory ?? ""] ?? 0) > (ranks[s.prevCategory ?? ""] ?? 0));
+            const decline = cmp.transitions.filter((s) => (ranks[s.currCategory ?? ""] ?? 0) < (ranks[s.prevCategory ?? ""] ?? 0));
+            const other = cmp.transitions.filter((s) => (ranks[s.currCategory ?? ""] ?? 0) === (ranks[s.prevCategory ?? ""] ?? 0));
+
+            return (
+              <div className="space-y-6">
+                {growth.length > 0 && (
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-m5">Рост ({growth.length})</h4>
+                    <div className="space-y-1.5">
+                      {growth.map((s) => (
+                        <button
+                          key={s.name}
+                          onClick={() => onSelectStudent(s.name)}
+                          className="flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-md border border-rule2 bg-paper2 px-3 py-2 text-left text-[13px] transition-colors hover:border-rule"
+                        >
+                          <span className="font-medium">{s.name}</span>
+                          <span className="ml-auto flex items-center gap-1.5">
+                            <Badge variant={categoryBadgeVariant(s.prevCategory ?? "")}>{s.prevCategory}</Badge>
+                            <ArrowRight className="size-3.5 text-ink2" />
+                            <Badge variant={categoryBadgeVariant(s.currCategory ?? "")}>{s.currCategory}</Badge>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {decline.length > 0 && (
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-m2">Снижение ({decline.length})</h4>
+                    <div className="space-y-1.5">
+                      {decline.map((s) => (
+                        <button
+                          key={s.name}
+                          onClick={() => onSelectStudent(s.name)}
+                          className="flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-md border border-rule2 bg-paper2 px-3 py-2 text-left text-[13px] transition-colors hover:border-rule"
+                        >
+                          <span className="font-medium">{s.name}</span>
+                          <span className="ml-auto flex items-center gap-1.5">
+                            <Badge variant={categoryBadgeVariant(s.prevCategory ?? "")}>{s.prevCategory}</Badge>
+                            <ArrowRight className="size-3.5 text-ink2" />
+                            <Badge variant={categoryBadgeVariant(s.currCategory ?? "")}>{s.currCategory}</Badge>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {other.length > 0 && (
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink2">Без изменения уровня ({other.length})</h4>
+                    <div className="space-y-1.5">
+                      {other.map((s) => (
+                        <button
+                          key={s.name}
+                          onClick={() => onSelectStudent(s.name)}
+                          className="flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-md border border-rule2 bg-paper2 px-3 py-2 text-left text-[13px] transition-colors hover:border-rule"
+                        >
+                          <span className="font-medium">{s.name}</span>
+                          <span className="ml-auto flex items-center gap-1.5">
+                            <Badge variant={categoryBadgeVariant(s.prevCategory ?? "")}>{s.prevCategory}</Badge>
+                            <ArrowRight className="size-3.5 text-ink2" />
+                            <Badge variant={categoryBadgeVariant(s.currCategory ?? "")}>{s.currCategory}</Badge>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </Section>
       </div>
 
