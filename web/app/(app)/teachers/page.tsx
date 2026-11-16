@@ -115,23 +115,29 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
             <DialogHeader>
               <DialogTitle>Ссылка готова</DialogTitle>
               <DialogDescription>
-                Отправьте её учителю любым удобным способом. Ссылка одноразовая и действует 7 дней.
+                Приглашение отправлено на <span className="font-medium text-ink">{created.email}</span>. Ссылка также доступна для копирования ниже.
               </DialogDescription>
             </DialogHeader>
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-3"
+              className="space-y-4 py-2"
             >
-              <div className="flex items-center gap-2 rounded-md border border-m5/40 bg-m5/10 p-3 overflow-hidden">
-                <Link2 className="size-4 shrink-0 text-m5" />
-                <code className="min-w-0 flex-1 truncate text-xs text-ink select-all">{inviteLink(created.token)}</code>
-                <CopyLinkButton token={created.token} />
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-rule2 bg-paper2 p-3">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-m5/10 text-m5">
+                    <Link2 className="size-4" />
+                  </div>
+                  <code className="min-w-0 truncate text-xs font-mono text-ink select-all">{inviteLink(created.token)}</code>
+                </div>
+                <div className="shrink-0">
+                  <CopyLinkButton token={created.token} />
+                </div>
               </div>
               <p className="text-xs text-ink2">
-                Для: <span className="font-medium text-ink">{created.email}</span>
+                Ссылка одноразовая, действует 7 дней.
                 {created.classIds.length > 0 && (
-                  <> · классы {alive.filter((c) => created.classIds.includes(c.id)).map((c) => c.name).join(", ")}</>
+                  <> Доступ к классам: <span className="font-medium text-ink">{alive.filter((c) => created.classIds.includes(c.id)).map((c) => c.name).join(", ")}</span></>
                 )}
               </p>
             </motion.div>
