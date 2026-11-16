@@ -104,6 +104,7 @@ export interface Invite {
   expiresAt: string;
   status: InviteStatus;
   invitedBy: string;
+  role?: Role;
 }
 
 export interface Snapshot {

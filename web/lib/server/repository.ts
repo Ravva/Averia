@@ -40,6 +40,7 @@ function toInvite(row: Row): Invite {
     expiresAt: String(row.expiresAt),
     status: String(row.status) as InviteStatus,
     invitedBy: String(row.invitedBy),
+    role: (row.role ? String(row.role) : "teacher") as Role,
   };
 }
 

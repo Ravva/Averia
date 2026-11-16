@@ -63,10 +63,11 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   const { state, createInvite } = useStore();
   const [email, setEmail] = useState("");
   const [classIds, setClassIds] = useState<string[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState<Invite | null>(null);
 
-  const alive = state.classes.filter((c) => !c.deletedAt);
+  const alive = state.classes.filter((c) => !c.deletedAt && c.teacherIds.length === 0);
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const alreadyUser = state.users.some((u) => u.email === email.trim().toLowerCase());
   const alreadyInvited = state.invites.some(
@@ -76,6 +77,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
   const reset = () => {
     setEmail("");
     setClassIds([]);
+    setIsAdmin(false);
     setError("");
     setCreated(null);
   };
@@ -94,7 +96,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
       return;
     }
     try {
-      const invite = await createInvite(email, classIds);
+      const invite = await createInvite(email, classIds, isAdmin);
       setCreated(invite);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Не удалось создать приглашение.");
@@ -165,6 +167,33 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Права пользователя</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsAdmin(false)}
+                    className={cn(
+                      "cursor-pointer rounded-lg border p-3 text-left transition-all",
+                      !isAdmin ? "border-primary bg-primary/10 text-ink ring-1 ring-primary" : "border-rule bg-paper2 text-ink2 hover:border-ink2",
+                    )}
+                  >
+                    <div className="font-semibold text-sm text-ink">Учитель</div>
+                    <div className="text-xs text-ink2 mt-0.5">Доступ к назначенным классам</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAdmin(true)}
+                    className={cn(
+                      "cursor-pointer rounded-lg border p-3 text-left transition-all",
+                      isAdmin ? "border-primary bg-primary/10 text-ink ring-1 ring-primary" : "border-rule bg-paper2 text-ink2 hover:border-ink2",
+                    )}
+                  >
+                    <div className="font-semibold text-sm text-ink">Админ</div>
+                    <div className="text-xs text-ink2 mt-0.5">Полный доступ к системе</div>
+                  </button>
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>Классы (можно выбрать позже)</Label>

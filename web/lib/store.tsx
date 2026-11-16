@@ -33,7 +33,7 @@ interface StoreValue {
   ) => Promise<void>;
   deleteClass: (id: string) => Promise<void>;
   restoreClass: (id: string) => Promise<void>;
-  createInvite: (email: string, classIds: string[]) => Promise<Invite>;
+  createInvite: (email: string, classIds: string[], isAdmin?: boolean) => Promise<Invite>;
   revokeInvite: (id: string) => Promise<void>;
   acceptInvite: (token: string, name: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   addSnapshot: (classId: string, payload: Payload, fileName: string) => Promise<Snapshot>;
@@ -160,8 +160,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const createInvite = useCallback(
-    async (email: string, classIds: string[]) => {
-      const { invite } = await api.createInvite(email, classIds);
+    async (email: string, classIds: string[], isAdmin = false) => {
+      const { invite } = await api.createInvite(email, classIds, isAdmin);
       await refresh();
       return invite;
     },

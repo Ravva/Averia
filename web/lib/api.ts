@@ -69,10 +69,10 @@ export const api = {
       body: JSON.stringify({ id, ...patch }),
     }),
 
-  createInvite: (email: string, classIds: string[]) =>
+  createInvite: (email: string, classIds: string[], isAdmin = false) =>
     request<{ invite: Invite }>("/api/invites", {
       method: "POST",
-      body: JSON.stringify({ email, classIds }),
+      body: JSON.stringify({ email, classIds, isAdmin }),
     }),
 
   revokeInvite: (id: string) =>

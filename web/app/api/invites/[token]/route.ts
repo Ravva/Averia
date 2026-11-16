@@ -96,7 +96,7 @@ export async function POST(
       userId: user.$id,
       name,
       email: invite.email,
-      role: "teacher",
+      role: invite.role ?? "teacher",
       createdAt: new Date().toISOString(),
     },
   });

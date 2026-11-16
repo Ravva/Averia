@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const admin = await requireAdmin();
-    let body: { email?: string; classIds?: string[] };
+    let body: { email?: string; classIds?: string[]; isAdmin?: boolean };
     try {
       body = await request.json();
     } catch {
@@ -51,6 +51,7 @@ export async function POST(request: Request) {
 
     const classes = await listClasses();
     const classIds = (body.classIds ?? []).filter((id) => classes.some((c) => c.id === id));
+    const role = body.isAdmin ? "admin" : "teacher";
 
     const now = new Date();
     const token = ID.unique();
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
         invitedBy: admin.id,
         createdAt: now.toISOString(),
         expiresAt: new Date(now.getTime() + 7 * 86400_000).toISOString(),
+        role,
       },
     });
 
