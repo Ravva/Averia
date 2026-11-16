@@ -115,7 +115,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
             <DialogHeader>
               <DialogTitle>Ссылка готова</DialogTitle>
               <DialogDescription>
-                Приглашение отправлено на <span className="font-medium text-ink">{created.email}</span>. Ссылка также доступна для копирования ниже.
+                Приглашение отправлено на <span className="font-medium text-ink">{created.email}</span>.
               </DialogDescription>
             </DialogHeader>
             <motion.div
@@ -123,14 +123,15 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-4 py-2"
             >
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-rule2 bg-paper2 p-3">
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-m5/10 text-m5">
-                    <Link2 className="size-4" />
-                  </div>
-                  <code className="min-w-0 truncate text-xs font-mono text-ink select-all">{inviteLink(created.token)}</code>
-                </div>
-                <div className="shrink-0">
+              <div className="space-y-2">
+                <Label htmlFor="invite-link-input" className="text-xs text-ink2">Пригласительная ссылка</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="invite-link-input"
+                    readOnly
+                    value={inviteLink(created.token)}
+                    className="font-mono text-xs select-all bg-paper"
+                  />
                   <CopyLinkButton token={created.token} />
                 </div>
               </div>
