@@ -24,9 +24,9 @@ import {
   KpiBand,
   MarksCard,
   StrongWeak,
+  SubjectsCard,
 } from "@/components/dashboard/current";
 import { RankingTable, SubjectsTable } from "@/components/dashboard/tables";
-import { SubjectsBarChart } from "@/components/dashboard/charts";
 import { DynamicsView } from "@/components/dashboard/dynamics";
 import { HistoryView } from "@/components/dashboard/history";
 import { StudentDrawer } from "@/components/dashboard/student-drawer";
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               transition={{ duration: 0.2 }}
             >
               <TabsContent value="current">
-                <div className="scene-panel mb-5 grid min-h-[330px] items-end gap-7 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:p-12">
+                <div className="scene-panel mb-4 grid min-h-[330px] items-end gap-7 p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:p-12">
                   <div className="relative z-10 max-w-[700px]">
                     <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-xl">
                       <Sparkles className="size-4 text-white" /> Класс {room?.name} · данные на {curr.dataDate}
@@ -167,21 +167,17 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <KpiBand payload={curr.payload} />
-                <div className="mt-7 grid gap-4 lg:grid-cols-2">
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
                   <MarksCard payload={curr.payload} />
                   <CategoriesCard payload={curr.payload} />
                 </div>
-                <div className="mt-9">
-                  <Section title="Сильные и слабые предметы" note="по среднему баллу">
-                    <StrongWeak payload={curr.payload} />
-                  </Section>
-                </div>
-                <Section title="Средний балл по предметам" note="цвет — уровень среднего · пунктир — деления шкалы">
-                  <div className="glass-surface overflow-x-auto p-5 sm:p-8">
-                    <div className="min-w-[620px]"><SubjectsBarChart payload={curr.payload} /></div>
-                  </div>
+                <Section title="Сильные и слабые предметы" note="по среднему баллу">
+                  <StrongWeak payload={curr.payload} />
                 </Section>
-                <Section title="По предметам" note="качество — доля оценок 4 и 5 · кубики — число оценок">
+                <div className="mt-4">
+                  <SubjectsCard payload={curr.payload} />
+                </div>
+                <Section title="По предметам" note="качество — доля оценок 4 и 5">
                   <SubjectsTable payload={curr.payload} />
                 </Section>
                 <Section title="Рейтинг учеников" note="нажмите на строку — карточка ученика">
@@ -190,7 +186,9 @@ export default function DashboardPage() {
                 <Section title="Группы внимания">
                   <GroupsCard payload={curr.payload} />
                 </Section>
-                <AbsentCard payload={curr.payload} />
+                <div className="mt-4">
+                  <AbsentCard payload={curr.payload} />
+                </div>
               </TabsContent>
 
               <TabsContent value="dynamics">

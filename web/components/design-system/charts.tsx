@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 const subjects = [
@@ -37,7 +37,22 @@ function markColor(avg: number) {
 export function SubjectsChart() {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState<number | null>(null);
-  const W = 720;
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(720);
+
+  /* One viewBox unit is one rendered pixel, so the chart type matches the
+     surrounding text instead of being scaled with the container. */
+  useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setWidth(Math.max(520, Math.round(el.clientWidth)));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const W = width;
   const left = 210;
   const right = 60;
   const rowH = 30;
@@ -48,7 +63,8 @@ export function SubjectsChart() {
   const scale = (v: number) => left + ((v - min) / (max - min)) * (W - left - right);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Средний балл по предметам">
+    <div ref={wrapRef} className="min-w-[520px]">
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Средний балл по предметам">
       {[3.5, 4.0, 4.5, 5.0].map((t) => (
         <g key={t}>
           <line className="chart-grid" x1={scale(t)} y1={top} x2={scale(t)} y2={H - 26} />
@@ -65,7 +81,7 @@ export function SubjectsChart() {
             <text className="chart-bar-label" x={0} y={y + 15} fill={active === i ? "var(--ink)" : undefined}>
               {s.name}
             </text>
-            <motion.rect x={left} y={y + 4} width={scale(s.avg) - left} height={14} fill={markColor(s.avg)} rx={3}
+            <motion.rect x={left} y={y + 8} width={scale(s.avg) - left} height={10} fill={markColor(s.avg)} rx={3}
               initial={reduceMotion ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true, amount: 0.1 }}
               transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : Math.min(i * 0.04, 0.5) }}
               style={{ transformBox: "fill-box", transformOrigin: "left center", filter: active === i ? `drop-shadow(0 0 5px ${markColor(s.avg)})` : undefined }} />
@@ -79,6 +95,7 @@ export function SubjectsChart() {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -87,7 +104,7 @@ export function DistributionBar() {
   const [active, setActive] = useState<string | null>(null);
   return (
     <div>
-      <div className="flex h-9 w-full overflow-hidden rounded-md">
+      <div className="flex h-2.5 w-full overflow-hidden rounded-sm">
         {distribution.map((d, i) => (
           <motion.div key={d.mark} title={`${d.mark}: ${d.count} оценок · ${d.share.toFixed(1).replace(".", ",")}%`}
             onMouseEnter={() => setActive(d.mark)} onMouseLeave={() => setActive(null)}

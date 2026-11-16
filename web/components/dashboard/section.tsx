@@ -16,8 +16,8 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section className={cn("mb-12", className)}>
-      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
+    <section className={cn("mt-4", className)}>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         {note && <span className="text-right text-sm text-ink2">{note}</span>}
       </div>

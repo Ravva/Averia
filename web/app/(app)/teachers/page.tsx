@@ -123,9 +123,9 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-3"
             >
-              <div className="flex items-center gap-2 rounded-md border border-m5/40 bg-m5/10 p-3">
+              <div className="flex items-center gap-2 rounded-md border border-m5/40 bg-m5/10 p-3 overflow-hidden">
                 <Link2 className="size-4 shrink-0 text-m5" />
-                <code className="min-w-0 flex-1 truncate text-xs text-ink">{inviteLink(created.token)}</code>
+                <code className="min-w-0 flex-1 truncate text-xs text-ink select-all">{inviteLink(created.token)}</code>
                 <CopyLinkButton token={created.token} />
               </div>
               <p className="text-xs text-ink2">

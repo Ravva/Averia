@@ -6,6 +6,7 @@ import type { Payload } from "@/lib/types";
 import { cn, fmtNum, fmtPct, markTone, plural } from "@/lib/utils";
 import { AnimatedNumber } from "@/components/animated-number";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { SubjectsBarChart } from "./charts";
 import { Rise } from "./section";
 
 const MARK_LABELS: Record<string, string> = {
@@ -55,7 +56,7 @@ export function KpiBand({ payload }: { payload: Payload }) {
     },
   ];
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item, i) => (
         <Rise key={item.label} delay={i * 0.08} className="glass-surface relative min-h-48 overflow-hidden p-6 sm:p-7">
           <span aria-hidden="true" className="absolute -right-5 -top-8 select-none text-[120px] leading-none font-black text-ink/[.035]">0{i + 1}</span>
@@ -82,7 +83,7 @@ export function MarksCard({ payload }: { payload: Payload }) {
   return (
     <div className="glass-surface h-full p-6 sm:p-8">
       <h3 className="mb-6 text-xl font-bold tracking-tight">Распределение оценок</h3>
-      <div className="flex h-9 overflow-hidden rounded-lg shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
+      <div className="flex h-2.5 overflow-hidden rounded-sm shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
         {payload.marks.map((m, i) => {
           const tone = MARK_BG[markTone(Number(m.value))];
           const width = total > 0 ? (m.count / total) * 100 : 0;
@@ -132,7 +133,7 @@ export function CategoriesCard({ payload }: { payload: Payload }) {
   return (
     <div className="glass-surface h-full p-6 sm:p-8">
       <h3 className="mb-6 text-xl font-bold tracking-tight">Категории учеников</h3>
-      <div className="flex h-9 overflow-hidden rounded-lg shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
+      <div className="flex h-2.5 overflow-hidden rounded-sm shadow-[inset_0_2px_5px_rgba(0,0,0,.13)]">
         {payload.categories.map((c, i) => (
           <motion.div
             key={c.name}
@@ -162,6 +163,20 @@ export function CategoriesCard({ payload }: { payload: Payload }) {
       <p className="mt-3 border-t border-rule2 pt-2 text-[11px] leading-snug text-ink2">
         Категории не пересекаются: каждый ученик попадает ровно в одну.
       </p>
+    </div>
+  );
+}
+
+export function SubjectsCard({ payload }: { payload: Payload }) {
+  return (
+    <div className="glass-surface h-full p-6 sm:p-8">
+      <div className="mb-6 flex items-baseline justify-between gap-3">
+        <h3 className="text-xl font-bold tracking-tight">Средний балл по предметам</h3>
+        <span className="text-[11px] text-ink2">цвет — уровень среднего · пунктир — деления шкалы</span>
+      </div>
+      <div className="overflow-x-auto">
+        <SubjectsBarChart payload={payload} />
+      </div>
     </div>
   );
 }
@@ -204,7 +219,7 @@ export function StrongWeak({ payload }: { payload: Payload }) {
 export function GroupsCard({ payload }: { payload: Payload }) {
   const toneBg: Record<string, string> = { m5: "bg-m5", m4: "bg-m4", m3: "bg-m3", m2: "bg-m2" };
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {payload.groups.map((g, i) => (
         <Rise
           key={g.key}
@@ -237,23 +252,14 @@ export function GroupsCard({ payload }: { payload: Payload }) {
 export function AbsentCard({ payload }: { payload: Payload }) {
   const withMissing = payload.subjects.filter((s) => s.missingStudents.length > 0);
   if (withMissing.length === 0 && payload.noMarksStudents.length === 0) return null;
-  const totalGaps = withMissing.reduce((s, x) => s + x.missingStudents.length, 0);
   return (
     <div className="glass-surface h-full p-6 sm:p-8">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h3 className="text-xl font-bold tracking-tight">Отсутствуют оценки</h3>
-        <span className="text-xs text-ink2">{totalGaps} {plural(totalGaps, "пропуск", "пропуска", "пропусков")}</span>
-      </div>
-      <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+      <h3 className="mb-6 text-xl font-bold tracking-tight">Отсутствуют оценки</h3>
+      <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
         {withMissing.map((s) => (
-          <div key={s.name} className="border-b border-rule2 pb-2">
-            <div className="flex items-baseline justify-between gap-3 text-[13px]">
-              <span className="truncate font-medium">{s.name}</span>
-              <span className="shrink-0 text-xs text-ink2">
-                {s.missingStudents.length} {plural(s.missingStudents.length, "ученик", "ученика", "учеников")}
-              </span>
-            </div>
-            <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+          <div key={s.name}>
+            <div className="border-b border-rule2 pb-1.5 text-[13px] font-medium">{s.name}</div>
+            <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
               {s.missingStudents.map((name) => (
                 <li key={name} className="text-xs text-ink2">{name}</li>
               ))}
@@ -262,12 +268,12 @@ export function AbsentCard({ payload }: { payload: Payload }) {
         ))}
       </div>
       {payload.noMarksStudents.length > 0 && (
-        <p className="mt-3 text-[13px] text-ink2">
+        <p className="mt-4 text-[13px] text-ink2">
           Совсем без оценок: <span className="font-medium text-ink">{payload.noMarksStudents.join(", ")}</span>
         </p>
       )}
-      <p className="mt-3 border-t border-rule2 pt-2 text-[11px] text-ink2">
-        Пропуск не считается нулём и не занижает средний балл предмета.
+      <p className="mt-4 border-t border-rule2 pt-2 text-[11px] text-ink2">
+        Отсутствующая оценка не считается нулём и не занижает средний балл предмета.
       </p>
     </div>
   );

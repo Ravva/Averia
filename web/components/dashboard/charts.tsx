@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import type { Payload, Snapshot } from "@/lib/types";
 import { fmtNum, plural } from "@/lib/utils";
@@ -29,6 +29,21 @@ function trunc(s: string, n: number): string {
 export function SubjectsBarChart({ payload }: { payload: Payload }) {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState<number | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(1200);
+
+  /* One viewBox unit is one rendered pixel, so the chart type matches the
+     surrounding text instead of being scaled up with the container. */
+  useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setWidth(Math.max(720, Math.round(el.clientWidth)));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const subjects = [...payload.subjects]
     .filter((s) => s.avg !== null)
     .sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0));
@@ -41,25 +56,28 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
   const ticks: number[] = [];
   for (let t = lo; t <= hi + 1e-9; t += 0.5) ticks.push(Number(t.toFixed(1)));
 
-  const labelRight = 236;
-  const plotLeft = 252;
-  const plotRight = 676;
+  const W = width;
+  const labelRight = 330;
+  const plotLeft = 346;
+  const plotRight = W - 92;
   const plotW = plotRight - plotLeft;
   const top = 14;
-  const rowH = 32;
-  const barH = 16;
+  const rowH = 30;
+  const barH = 10;
   const plotBottom = top + subjects.length * rowH;
   const height = plotBottom + 26;
   const x = (v: number) => plotLeft + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * plotW;
-  const valueRight = 740;
+  const valueRight = W - 14;
 
   return (
+    <div ref={wrapRef} className="min-w-[720px]">
     <svg
-      viewBox={`0 0 746 ${height}`}
-      width="100%"
+      viewBox={`0 0 ${W} ${height}`}
+      width={W}
+      height={height}
       role="img"
       aria-label="Средний балл по предметам"
-      className="block max-w-full"
+      className="block"
     >
       {ticks.map((t) => (
         <g key={t}>
@@ -77,12 +95,12 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
         const tone = avgTone(avg);
         return (
           <g key={s.name} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
-            {active === i && <rect x={0} y={y} width={746} height={rowH} rx={6} fill="var(--band)" />}
-            <text className="chart-bar-label" x={labelRight} y={y + 20} textAnchor="end" fill={active === i ? "var(--ink)" : undefined}>
+            {active === i && <rect x={0} y={y} width={W} height={rowH} rx={6} fill="var(--band)" />}
+            <text className="chart-bar-label" x={labelRight} y={y + 19} textAnchor="end" fill={active === i ? "var(--ink)" : undefined}>
               {trunc(s.name, 32)}
               <title>{s.name}</title>
             </text>
-            <motion.rect x={plotLeft} y={y + 7} width={w} height={barH + 4} rx={5} fill={tone}
+            <motion.rect x={plotLeft} y={y + 9} width={w} height={barH} rx={3} fill={tone}
               initial={reduceMotion ? false : { scaleX: 0, opacity: 0.6 }}
               whileInView={{ scaleX: 1, opacity: 1 }}
               viewport={{ once: true, amount: 0.1 }}
@@ -91,16 +109,17 @@ export function SubjectsBarChart({ payload }: { payload: Payload }) {
             >
               <title>{`${s.name} — ${fmtNum(avg)} · ${s.graded} ${plural(s.graded, "оценка", "оценки", "оценок")}`}</title>
             </motion.rect>
-            <text className="chart-bar-value" x={valueRight} y={y + 21} textAnchor="end">
+            <text className="chart-bar-value" x={valueRight} y={y + 20} textAnchor="end">
               {fmtNum(avg)}
             </text>
-            <rect x={0} y={y} width={746} height={rowH} fill="transparent" tabIndex={0}
+            <rect x={0} y={y} width={W} height={rowH} fill="transparent" tabIndex={0}
               role="graphics-symbol" aria-label={`${s.name}: ${fmtNum(avg)}`}
               onFocus={() => setActive(i)} onBlur={() => setActive(null)} />
           </g>
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -178,9 +197,11 @@ function MetricLine({
         {points.map((p, i) => (
           <g key={i} onMouseEnter={() => setActive(i)} onMouseLeave={() => setActive(null)}>
             <circle cx={x(i)} cy={y(p.value)} r={active === i ? 6 : 3.25} fill="var(--paper-2)" stroke="var(--m5)" strokeWidth={2} pointerEvents="none" />
-            <text className="chart-bar-value" x={x(i)} y={Math.max(10, y(p.value) - 8)} textAnchor="middle">
-              {format(p.value)}
-            </text>
+            {active === i && (
+              <text className="chart-bar-value" x={x(i)} y={Math.max(10, y(p.value) - 8)} textAnchor="middle">
+                {format(p.value)}
+              </text>
+            )}
             <text className="chart-axis-text" x={x(i)} y={H - 8} textAnchor="middle">
               {p.label}
             </text>
