@@ -41,8 +41,24 @@ export default function DashboardPage() {
   const [currId, setCurrId] = useState<string>("");
 
   useEffect(() => {
-    if (!classId && visibleClasses.length > 0) setClassId(visibleClasses[0].id);
-  }, [visibleClasses, classId]);
+    if (!classId && visibleClasses.length > 0) {
+      if (currentUser) {
+        const owned = visibleClasses.find((c) => c.teacherIds.includes(currentUser.id));
+        if (owned) {
+          setClassId(owned.id);
+          return;
+        }
+      }
+      if (currentUser?.role === "admin") {
+        const withData = visibleClasses.find((c) => classSnapshots(state, c.id).length > 0);
+        if (withData) {
+          setClassId(withData.id);
+          return;
+        }
+      }
+      setClassId(visibleClasses[0].id);
+    }
+  }, [visibleClasses, classId, currentUser, state]);
 
   const room = visibleClasses.find((c) => c.id === classId) ?? null;
   const snapshots = useMemo(
