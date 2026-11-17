@@ -74,64 +74,54 @@ export async function POST(request: Request) {
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "localhost:3000";
     const inviteUrl = `https://${host}/invite/${token}`;
 
+    const subject = "Приглашение в систему аналитики успеваемости Averia";
+    const roleName = role === "admin" ? "администратора" : "учителя";
+    const roleDescription = role === "admin"
+      ? "Вы сможете управлять классами и приглашать сотрудников."
+      : "Вы сможете работать с назначенными вам классами и анализировать успеваемость.";
     const htmlContent = `
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Приглашение в Аверию</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #E9EDF4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #132136;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #E9EDF4; padding: 40px 0;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #FFFFFF; border: 1px solid #A8B8CC; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 32px rgba(24, 54, 96, 0.1);">
-          <!-- Header -->
-          <tr>
-            <td style="padding: 32px 40px 24px 40px; border-bottom: 1px solid #D8E1EC;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td>
-                    <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: #132136;">Аверия</span>
-                    <span style="font-size: 13px; color: #51647C; display: block; margin-top: 4px;">Школьная аналитика и управление классами</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- Content -->
-          <tr>
-            <td style="padding: 40px;">
-              <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #132136; letter-spacing: -0.02em;">Приглашение для преподавателя</h1>
-              <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #51647C;">
-                Здравствуйте!<br>
-                Администратор пригласил вас присоединиться к платформе Аверия. После принятия приглашения вы получите доступ к классам, расписанию и журналам успеваемости.
-              </p>
-              <table role="presentation" cellspacing="0" cellpadding="0" style="margin: 32px 0;">
-                <tr>
-                  <td align="center" style="border-radius: 8px; background-color: #245DB0;">
-                    <a href="${inviteUrl}" target="_blank" style="font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 8px; border: 1px solid #245DB0; display: inline-block;">Принять приглашение и войти</a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 24px 0 0 0; font-size: 13px; line-height: 1.5; color: #51647C;">
-                Или скопируйте эту ссылку в адресную строку браузера:<br>
-                <a href="${inviteUrl}" style="color: #245DB0; word-break: break-all; text-decoration: underline;">${inviteUrl}</a>
-              </p>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #F0F5FA; padding: 24px 40px; border-top: 1px solid #D8E1EC; text-align: center;">
-              <p style="margin: 0; font-size: 12px; color: #51647C;">
-                Ссылка действительна в течение 7 дней.<br>
-                Если вы не ожидали это приглашение, просто проигнорируйте письмо.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+<body style="margin:0;padding:0;background-color:#E9EDF4;font-family:Arial,Helvetica,sans-serif;color:#132136;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#E9EDF4;">
+    <tr><td align="center" style="padding:32px 12px 40px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#FFFFFF;border-radius:12px;">
+        <tr><td style="padding:32px 24px 28px;border-bottom:1px solid #D8E1EC;">
+          <table role="presentation" cellspacing="0" cellpadding="0">
+            <tr>
+              <td width="48" style="width:48px;vertical-align:middle;"><img src="https://${host}/averia-logo.png" width="48" height="48" alt="Логотип Averia" style="display:block;width:48px;height:48px;border:0;border-radius:10px;"></td>
+              <td style="padding-left:14px;vertical-align:middle;"><span style="display:block;font-size:23px;line-height:27px;font-weight:700;letter-spacing:-0.03em;color:#132136;">Averia<span style="color:#245DB0;">.</span></span><span style="display:block;margin-top:2px;font-size:12px;line-height:18px;color:#51647C;">Аналитика успеваемости</span></td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:38px 24px 40px;">
+          <h1 style="margin:0 0 14px;font-size:27px;line-height:34px;letter-spacing:-0.02em;color:#132136;">Вас пригласили в Averia</h1>
+          <p style="margin:0 0 28px;font-size:15px;line-height:24px;color:#51647C;">Здравствуйте! Администратор школы приглашает вас присоединиться к системе аналитики успеваемости.</p>
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#142E54;border-radius:12px;">
+            <tr><td style="padding:24px 28px;">
+              <p style="margin:0 0 8px;font-size:20px;line-height:26px;font-weight:700;color:#FFFFFF;">Доступ ${roleName}</p>
+              <p style="margin:0;font-size:14px;line-height:22px;color:#E2ECFA;">${roleDescription}</p>
+            </td></tr>
+          </table>
+          <p style="margin:28px 0 20px;font-size:15px;line-height:24px;color:#51647C;">Чтобы создать аккаунт, перейдите по ссылке приглашения:</p>
+          <table role="presentation" cellspacing="0" cellpadding="0">
+            <tr><td align="center" bgcolor="#245DB0" style="border-radius:8px;background-color:#245DB0;">
+              <a href="${inviteUrl}" style="display:inline-block;padding:15px 24px;border-radius:8px;color:#FFFFFF;font-size:15px;line-height:20px;font-weight:700;text-decoration:none;">Принять приглашение</a>
+            </td></tr>
+          </table>
+          <p style="margin:28px 0 6px;font-size:13px;line-height:20px;color:#51647C;">Если кнопка не работает, скопируйте ссылку:</p>
+          <p style="margin:0;font-size:13px;line-height:20px;word-break:break-all;"><a href="${inviteUrl}" style="color:#245DB0;text-decoration:underline;">${inviteUrl}</a></p>
+        </td></tr>
+        <tr><td style="padding:22px 24px 26px;border-top:1px solid #D8E1EC;background-color:#F0F5FA;border-radius:0 0 12px 12px;">
+          <p style="margin:0;font-size:12px;line-height:19px;color:#51647C;">Ссылка действительна 7 дней. Если вы не ожидали приглашения, просто проигнорируйте это письмо.</p>
+        </td></tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>
@@ -140,7 +130,7 @@ export async function POST(request: Request) {
     try {
       await messagingApi().createEmail({
         messageId: ID.unique(),
-        subject: "Приглашение в Аверию",
+        subject,
         content: htmlContent,
         html: true,
         emails: [email],
