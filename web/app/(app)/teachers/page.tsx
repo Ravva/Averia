@@ -54,7 +54,7 @@ function CopyLinkButton({ token, small = false }: { token: string; small?: boole
   return (
     <Button variant={small ? "ghost" : "outline"} size={small ? "icon" : "sm"} onClick={copy} aria-label="Скопировать ссылку">
       {copied ? <Check className="text-m5" /> : <Copy />}
-      {!small && (copied ? "Скопировано" : "Копировать")}
+      {!small && copied && "Скопировано"}
     </Button>
   );
 }
@@ -132,7 +132,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
                     id="invite-link-input"
                     readOnly
                     value={inviteLink(created.token)}
-                    className="font-mono text-xs select-all bg-paper"
+                    className="font-mono text-xs select-all bg-paper flex-1"
                   />
                   <CopyLinkButton token={created.token} />
                 </div>
