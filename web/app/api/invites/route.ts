@@ -141,10 +141,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ invite: { ...row, token: String(row.token) } });
   } catch (e) {
+    console.error("Invites POST error:", e);
     if (e instanceof AuthError) {
       return NextResponse.json({ error: e.message }, { status: e.status });
     }
-    throw e;
+    return NextResponse.json({ error: "Ошибка сервера: " + (e instanceof Error ? e.message : String(e)) }, { status: 500 });
   }
 }
 
