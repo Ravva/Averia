@@ -86,6 +86,7 @@ const SPECS: TableSpec[] = [
       { kind: "string", key: "invitedBy", size: 64, required: true },
       { kind: "datetime", key: "createdAt", required: true },
       { kind: "datetime", key: "expiresAt", required: true },
+      { kind: "enum", key: "role", elements: ["admin", "teacher"], required: false },
     ],
     indexes: [
       { key: "token_unique", columns: ["token"], unique: true },
