@@ -40,6 +40,16 @@ export function fmtDeltaPp(x: number | null | undefined, digits = 1): string {
   })} п.п.`;
 }
 
+// Sortable key for a snapshot date: dataDate is "DD.MM.YYYY", so it must be
+// reordered before comparison, otherwise "09.11" sorts after "10.11".
+export function dataDateKey(date: string): string {
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(date.trim());
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  const parsed = Date.parse(date);
+  if (!Number.isNaN(parsed)) return new Date(parsed).toISOString();
+  return "";
+}
+
 export function fmtDateTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("ru-RU", {

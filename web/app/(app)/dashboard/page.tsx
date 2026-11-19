@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarDays, FileSpreadsheet, Sparkles, Upload } from "lucide-react";
 import { classSnapshots, useStore } from "@/lib/store";
-import { fmtDateTime } from "@/lib/utils";
+import { dataDateKey, fmtDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -65,18 +65,64 @@ export default function DashboardPage() {
     () => (room ? classSnapshots(state, room.id) : []),
     [state, room],
   );
-  const curr = snapshots[snapshots.length - 1] ?? null;
-  const prev = snapshots[snapshots.length - 2] ?? null;
+  // Срезы по дате данных: старый → новый, чтобы «предыдущий» всегда был раньше «нового».
+  const datedSnapshots = useMemo(
+    () =>
+      [...snapshots].sort(
+        (a, b) =>
+          dataDateKey(a.dataDate).localeCompare(dataDateKey(b.dataDate)) ||
+          a.uploadedAt.localeCompare(b.uploadedAt),
+      ),
+    [snapshots],
+  );
+  const curr = datedSnapshots[datedSnapshots.length - 1] ?? null;
+  const prev = datedSnapshots[datedSnapshots.length - 2] ?? null;
 
   useEffect(() => {
-    if (snapshots.length >= 2) {
-      setCurrId(snapshots[snapshots.length - 1].id);
-      setPrevId(snapshots[snapshots.length - 2].id);
+    if (datedSnapshots.length >= 2) {
+      setCurrId(datedSnapshots[datedSnapshots.length - 1].id);
+      setPrevId(datedSnapshots[datedSnapshots.length - 2].id);
     }
-  }, [classId, snapshots.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [classId, datedSnapshots.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const dynPrev = snapshots.find((s) => s.id === prevId) ?? prev;
-  const dynCurr = snapshots.find((s) => s.id === currId) ?? curr;
+  const pickPrev = (id: string) => {
+    const picked = datedSnapshots.find((s) => s.id === id);
+    const current = datedSnapshots.find((s) => s.id === currId);
+    if (!picked) return;
+    if (current && dataDateKey(picked.dataDate) > dataDateKey(current.dataDate)) {
+      // Выбран более поздний срез — меняем их местами.
+      setCurrId(picked.id);
+      setPrevId(current.id);
+      return;
+    }
+    setPrevId(id);
+  };
+
+  const pickCurr = (id: string) => {
+    const picked = datedSnapshots.find((s) => s.id === id);
+    const previous = datedSnapshots.find((s) => s.id === prevId);
+    if (!picked) return;
+    if (previous && dataDateKey(picked.dataDate) < dataDateKey(previous.dataDate)) {
+      // Выбран более ранний срез — меняем их местами.
+      setPrevId(picked.id);
+      setCurrId(previous.id);
+      return;
+    }
+    setCurrId(id);
+  };
+
+  const selectedPrev = datedSnapshots.find((s) => s.id === prevId) ?? prev;
+  const selectedCurr = datedSnapshots.find((s) => s.id === currId) ?? curr;
+  const dynPrev =
+    selectedPrev && selectedCurr &&
+    dataDateKey(selectedPrev.dataDate) > dataDateKey(selectedCurr.dataDate)
+      ? selectedCurr
+      : selectedPrev;
+  const dynCurr =
+    selectedPrev && selectedCurr &&
+    dataDateKey(selectedPrev.dataDate) > dataDateKey(selectedCurr.dataDate)
+      ? selectedPrev
+      : selectedCurr;
 
   const openStudent = (name: string) => {
     setSelectedStudent(name);
@@ -212,23 +258,23 @@ export default function DashboardPage() {
                   <>
                     <div className="mb-6 flex flex-wrap items-center gap-3 text-sm">
                       <span className="text-ink2">Сравниваем</span>
-                      <Select value={dynCurr.id} onValueChange={setCurrId}>
-                        <SelectTrigger className="w-36" aria-label="Новый срез">
+                      <Select value={dynPrev.id} onValueChange={pickPrev}>
+                        <SelectTrigger className="w-36" aria-label="Предыдущий срез">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {snapshots.map((s) => (
+                          {datedSnapshots.map((s) => (
                             <SelectItem key={s.id} value={s.id}>{s.dataDate}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       <span className="text-ink2">с</span>
-                      <Select value={dynPrev.id} onValueChange={setPrevId}>
-                        <SelectTrigger className="w-36" aria-label="Предыдущий срез">
+                      <Select value={dynCurr.id} onValueChange={pickCurr}>
+                        <SelectTrigger className="w-36" aria-label="Новый срез">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {snapshots.map((s) => (
+                          {datedSnapshots.map((s) => (
                             <SelectItem key={s.id} value={s.id}>{s.dataDate}</SelectItem>
                           ))}
                         </SelectContent>
@@ -245,7 +291,7 @@ export default function DashboardPage() {
 
               <TabsContent value="history">
                 <HistoryView
-                  snapshots={snapshots}
+                  snapshots={datedSnapshots}
                   canDelete={currentUser?.role === "admin" || (room?.teacherIds.includes(currentUser?.id ?? "") ?? false)}
                 />
               </TabsContent>
@@ -259,7 +305,7 @@ export default function DashboardPage() {
           name={student}
           payload={curr.payload}
           prevPayload={prev?.payload ?? null}
-          snapshots={snapshots}
+          snapshots={datedSnapshots}
           open={drawerOpen}
           onOpenChange={setDrawerOpen}
         />
